@@ -1,12 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Portfolio</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-    </style>
+    <title>Project 1</title>
 </head>
+<body>
+  <h2> Project 1 - Ashley Jung</h2> 
+  <h3> Goal </h3>
+  <p> Align misaligned RGB color channels in scanned images and improve image contrast using various techniques.</p>
+  <h3> Approach</h3>
+  <ol> 
+  <li> Read an image and splitting it into three equal parts, which represent the blue, green, and red color channels, respectively.</li> 
+  <li> Crop the color channels to remove unnecessary borders.</li>
+  <li> Use image pyramid to perform multi-level image alignment.</li>
+  <p>Create progressively smaller versions of the images and aligning them from the lowest resolution to the highest, refining the offset at each level using Normalized Cross-Correlation (NCC) to determine the best alignment between the red and green channels relative to the blue channel.</p>
+  <li> Stack RGB channels to render the image.</li>
+  </ol>
+  <h3> Bells and whistles </h3>
+  <ul>
+  <li> Automatic Contrast</li>
+  <p> Tried different methods of automatic contrast, and CLAHE histogram equalization produced the best image out of these methods </p>
+  <ol>
+    <li> Converted rgb to hsv, apply histogram on intensity of the image</li>
+    <li> CLAHE Histogram Equalization method </li>
+    <li> Histogram equalization for each color channel </li>
+  </ol>
+  <li> Better features
+  <p> Applied the Canny edge detector to each level of the image pyramid to extract edge maps, focusing on structural features for more accurate alignment of color channels. </p>
+  </li>
+  </ul>
+  <h3> Results </h3>
+  <body>
+<div class="image-container">
+    <img src="./img/cathedral_result.jpg" alt="Cathedral">
+    <div class="offset-text">Red Offset: (12, 3), Green Offset: (5, 2)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/church_result.jpg" alt="Church">
+    <div class="offset-text">Red Offset: (58, -4), Green Offset: (25, 4)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/emir_result.jpg" alt="Emir">
+    <div class="offset-text">Red Offset: (107, 40), Green Offset: (49, 23)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/harvesters_result.jpg" alt="Harvesters">
+    <div class="offset-text">Red Offset: (118, 11), Green Offset: (60, 18)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/icon_result.jpg" alt="Icon">
+    <div class="offset-text">Red Offset: (90, 22), Green Offset: (38, 16)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/lady_result.jpg" alt="Lady">
+    <div class="offset-text">Red Offset: (120, 13), Green Offset: (57, 9)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/monastery_result.jpg" alt="Monastery">
+    <div class="offset-text">Red Offset: (3, 2), Green Offset: (-3, 2)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/melons_result.jpg" alt="Melons">
+    <div class="offset-text">Red Offset: (177, 14), Green Offset: (79, 9)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/onion_church_result.jpg" alt="Onion Church">
+    <div class="offset-text">Red Offset: (107, 34), Green Offset: (52, 30)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/sculpture_result.jpg" alt="Sculpture">
+    <div class="offset-text">Red Offset: (140, -27), Green Offset: (33, -11)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/self_portrait_result.jpg" alt="Self Portrait">
+    <div class="offset-text">Red Offset: (175, 37), Green Offset: (77, 29)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/three_generations_result.jpg" alt="Three Generations">
+    <div class="offset-text">Red Offset: (115, 12), Green Offset: (57, 17)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/tobolsk_result.jpg" alt="Tobolsk">
+    <div class="offset-text">Red Offset: (6, 3), Green Offset: (3, 3)</div>
+</div>
+
+<div class="image-container">
+    <img src="./img/train_result.jpg" alt="Train">
+    <div class="offset-text">Red Offset: (84, 34), Green Offset: (40, 8)</div>
+</div>
+</body>
+</body>
 </html>
