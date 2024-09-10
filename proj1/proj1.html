@@ -16,7 +16,7 @@
         <li>
             Create progressively smaller versions of the images using an image pyramid. 
         </li>
-        <li> Align them from the lowest resolution to the highest, refining the offset at each level using NCC to determine the best alignment between the red and green channels relative to the blue channel</li>
+        <li> Align them from the lowest resolution to the highest, refining the offset at each level using NCC to determine the best alignment between the red and green channels relative to the blue channel.</li>
         <li> At the lowest level, the shift range is set to [-5,5], as a wider search range is necessary. </li>
         <li> Once the best shift is estimated at this level, the offset is doubled at higher levels, and the search range is refined to [-1,1] within the estimated offset.</li>
     </ul>
