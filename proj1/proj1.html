@@ -10,20 +10,21 @@
   <h3> Approach</h3>
   <ol> 
   <li> Read an image and splitting it into three equal parts, which represent the blue, green, and red color channels, respectively.</li> 
-  <li> Crop the color channels to remove unnecessary borders.</li>
+  <li> Crop the 5% of the border of color channels.</li>
   <li> Use image pyramid to perform multi-level image alignment.</li>
-  <p>Create progressively smaller versions of the images and aligning them from the lowest resolution to the highest, refining the offset at each level using Normalized Cross-Correlation (NCC) to determine the best alignment between the red and green channels relative to the blue channel.</p>
+  <p>Create progressively smaller versions of the images using image pyramid. Align them from the lowest resolution to the highest, refining the offset at each level using Normalized Cross-Correlation (NCC) to determine the best alignment between the red and green channels relative to the blue channel.</p>
+  <p>The brute force NCC alignment method has a default shift of [-15,15], but as image pyramid finds an estimated best shift in rescaled images, the shift is set to [-1,1].</p>
   <li> Stack RGB channels to render the image.</li>
   </ol>
   <h3> Bells and whistles </h3>
   <ul>
   <li> Automatic Contrast</li>
-  <p> Tried different methods of automatic contrast, and CLAHE histogram equalization produced the best image out of these methods </p>
-  <ol>
-    <li> Converted rgb to hsv, apply histogram on intensity of the image</li>
+  <p> I tried three different methods of automatic contrast(histogram equalization), and CLAHE histogram equalization produced the best image out of these methods. </p>
+  <ul>
+    <li> Convert rgb to hsv color space, apply the histogram equalization on intensity of the image</li>
     <li> CLAHE Histogram Equalization method </li>
     <li> Histogram equalization for each color channel </li>
-  </ol>
+  </ul>
   <li> Better features
   <p> Applied the Canny edge detector to each level of the image pyramid to extract edge maps, focusing on structural features for more accurate alignment of color channels. </p>
   </li>
