@@ -47,13 +47,13 @@
         <img src="./result/Blurred_Gm_binarized.jpg" alt="Blurred Gm | Blurred Gm - Binarized">
 
         <h3>Differences Observed</h3>
-    <p>Applying a Gaussian filter before using the finite difference operator creates a blurred version of the image, which significantly reduces noise. This smoothing results in cleaner gradient images, allowing for sharper edge detection and a more accurate representation of the image's features.</p>
+    <p>Applying a Gaussian filter before using the finite difference operator creates a blurred version of the image, which reduces noise. This smoothing results in cleaner gradient images, allowing for sharper edge detection and a more accurate representation of the image's features.</p>
     
     <h3>Using Derivative of Gaussian Filters</h3>
-    <p>By convolving the Gaussian filter with the derivative operators \(D_x\) and \(D_y\), we create Derivative of Gaussian (DoG) filters. This method simplifies the process, combining smoothing and differentiation into one step.</p>
+    <p>By convolving the Gaussian filter with the derivative operators Dx and Dy, we create Derivative of Gaussian (DoG) filters. DoG simplifies the process by combining smoothing and differentiation into one step.</p>
     
     <h3>Verification of Results</h3>
-    <p>The resulting gradient images from the DoG filters closely resemble those from the two-step process, confirming that this approach effectively detects edges while maintaining clarity.</p>
+    <p>The resulting gradient images from the DoG filters closely resemble those from the two-step process.</p>
     </div>
     
         <h3>2.1 Unsharp Masking</h3>
@@ -69,7 +69,7 @@
 
         <h4>Moon (After blurring and sharpened) </h4>
         <img src="./result/moon_sharpened.jpg" alt="Blurrd | Sharpened Moon">
-        <p>Sharpening the blurred image brought back some detail but was not as sharp as the original image.</p>
+        <p>Sharpening the blurred image brought back the detail but it is not as sharp as the original image.</p>
     </div>
     
     <h3>2.2 Hybrid Images</h3>
@@ -93,14 +93,12 @@
         <img src="./result/fft_zebra.jpg" alt="FFT Zebra">
 
         <h4>Lion and Zebra Hybrid</h4>
-        <img src="./result/lion_zebra_hybrid.jpg" alt="Lion Zebra Hybrid">
+        <img src="./result/zebra_lion_hybrid.jpg" alt="Lion Zebra Hybrid">
 
         <h3>Bells & Whistles</h3>
     <p>I experimented with using color to enhance the effect. In my tests, applying color to both the high-frequency and low-frequency components produced the best results, providing a more detailed representation of the image.</p>
     </div>
-    <h3>2.3 Gaussian and Laplacian Stacks</h3>
-    <p>This section demonstrates the Gaussian and Laplacian stacks generated for different images.</p>
-    
+    <h3>2.3 Gaussian and Laplacian Stacks</h3>    
     <div class="image-container">
         <h4>Apple Image Stacks</h4>
         <img src="result/apple_level_1.jpg" alt="Apple Gaussian | Laplacian Level 1"><br>
@@ -117,10 +115,8 @@
         <img src="result/orange_level_5.jpg" alt="Orange Gaussian | Laplacian Level 5"><br>
     </div>
     
-    <h3>2.4 Blending Images</h3>
-    <p>This section demonstrates blending images using Gaussian and Laplacian stacks.</p>
-    
-    <h4>Blended Image 1: Orapple</h4>
+    <h3>2.4 Blending Images</h3>    
+    <h4>Orapple</h4>
     <img src="result/orapple.jpg" alt="Blended Image - Orapple">
 
     <h4>Moon Phase and Cityscape</h4>
@@ -129,7 +125,7 @@
         <img src="./result/cityscape.jpg" alt="Cityscape">
     </div>
     
-    <h4>Blended Moon and Cityscape</h4>
+    <h4>Blended Moon and Cityscape (horizontal mask)</h4>
     <img src="./result/moon_cityscape.jpg" alt="Blended Moon and Cityscape">
 
     <h4>Window and Space</h4>
@@ -138,7 +134,7 @@
         <img src="./result/space.jpeg" alt="Space">
     </div>
     
-    <h4>Blended Window and Space</h4>
+    <h4>Blended Window and Space (irregular mask)</h4>
     <img src="./result/window_space.jpg" alt="Blended Window and Space">
 
     
