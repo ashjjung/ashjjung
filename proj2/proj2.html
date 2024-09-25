@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project 2</title>
+</head>
+<body>
+  <h2> Project 2 - Fun with Filters and Frequencies</h2> 
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .image-container img {
+            flex: 1 1 45%;
+            margin-right: 10px;
+        }
+    </style>
+  <h3> 1.1 Finite Difference Operator</h3>
+  <div class="image-container">
+    <h4>Original Image - Cameraman</h4>
+    <img src="./result/apple_level_1.jpg" alt="Original Image - Cameraman">
+    
+    <h4>Gx</h4>
+    <img src="./result/Gx.jpg" alt="Cameraman Gx">
+    
+    <h4>Gy</h4>
+    <img src="./result/Gy.jpg" alt="Cameraman Gy">
+    
+    <h4>Gm</h4>
+    <img src="./result/Gm.jpg" alt="Gm">
+    
+    <h4>Gm - Binarized</h4>
+    <img src="./result/Gm_binarized.jpg" alt="Gm - Binarized">
+    </div>
+    
+    
+    <h3>1.2 Blurring the Image</h3>
+    <div class="image-container">
+        <h4>Blurred Image</h4>
+        <img src="./result/blurred_image.jpg" alt="Blurred Image">
+
+        <h4>Blurred Gx</h4>
+        <img src="./result/Blurred_Gx.jpg" alt="Blurred Gx">
+
+        <h4>Blurred Gy</h4>
+        <img src="./result/Blurred_Gy.jpg" alt="Blurred Gy">
+
+        <h4>Blurred Gm</h4>
+        <img src="./result/Blurred_Gm.jpg" alt="Blurred Gm">
+
+        <h4>Blurred Gm - Binarized</h4>
+        <img src="./result/Blurred_Gm_binarized.jpg" alt="Blurred Gm - Binarized">
+    </div>
+    
+        <h3>2.1 Unsharp Masking</h3>
+    <div class="image-container">
+        <h4>Taj Mahal</h4>
+        <img src="./result/taj_sharpened.jpg" alt="Blurred | Sharpened Taj Mahal">
+
+        <h4>Flower</h4>
+        <img src="./result/flower_sharpened.jpg" alt="Blurred | Sharpened Flower">
+
+        <h4>Monet</h4>
+        <img src="./result/monet_sharpened.jpg" alt="Blurred | Sharpened Monet">
+
+        <h4>Moon</h4>
+        <img src="./result/moon_sharpened.jpg" alt="Blurrd | Sharpened Moon">
+    </div>
+    
+    <h3>2.2 Hybrid Images</h3>
+    <div class="image-container">
+        <h4>Derek Nutmeg Hybrid</h4>
+        <img src="./result/derek_nutmeg_hybrid.jpg" alt="Derek Nutmeg Hybrid">
+
+        <h4>Donald</h4>
+        <img src="./result/donald.jpg" alt="Donald">
+        <img src="./result/fft_donald.jpg" alt="FFT Donald">
+
+        <h4>Duck</h4>
+        <img src="./result/duck.jpg" alt="Duck">
+        <img src="./result/fft_duck.jpg" alt="FFT Duck">
+
+        <h4>Donald and Duck Hybrid</h4>
+        <img src="./result/donald_duck_hybrid.jpg" alt="Donald Duck Hybrid">
+
+        <h4>Lion</h4>
+        <img src="./result/lion.jpg" alt="Lion">
+        <img src="./result/fft_lion.jpg" alt="FFT Lion">
+
+        <h4>Zebra</h4>
+        <img src="./result/zebra.jpg" alt="Zebra">
+        <img src="fft_zebra.jpg" alt="FFT Zebra">
+
+        <h4>Lion and Zebra Hybrid</h4>
+        <img src="./result/lion_zebra_hybrid.jpg" alt="Lion Zebra Hybrid">
+    </div>
+    <h3>2.3 Gaussian and Laplacian Stacks</h3>
+    <p>This section demonstrates the Gaussian and Laplacian stacks generated for different images.</p>
+    
+    <div class="image-container">
+        <h4>Apple Image Stacks</h4>
+        <img src="result/apple_level_1.jpg" alt="Apple Gaussian | Laplacian Level 1">
+        <img src="result/apple_level_2.jpg" alt="Apple Gaussian | Laplacian Level 2">
+        <img src="result/apple_level_3.jpg" alt="Apple Gaussian | Laplacian Level 3">
+        <img src="result/apple_level_4.jpg" alt="Apple Gaussian | Laplacian Level 4">
+        <img src="result/apple_level_5.jpg" alt="Apple Gaussian | Laplacian Level 5">
+
+        <h4>Orange Image Stacks</h4>
+        <img src="result/orange_level_1.jpg" alt="Orange Gaussian | Laplacian Level 1">
+        <img src="result/orange_level_2.jpg" alt="Orange Gaussian | Laplacian Level 2">
+        <img src="result/orange_level_3.jpg" alt="Orange Gaussian | Laplacian Level 3">
+        <img src="result/orange_level_4.jpg" alt="Orange Gaussian | Laplacian Level 4">
+        <img src="result/orange_level_5.jpg" alt="Orange Gaussian | Laplacian Level 5">
+    </div>
+    
+    <h3>2.4 Blending Images</h3>
+    <p>This section demonstrates blending images using Gaussian and Laplacian stacks.</p>
+    
+    <h4>Blended Image 1: Orapple</h4>
+    <img src="result/orapple.jpg" alt="Blended Image - Orapple">
+
+    <h4>Moon Phase and Cityscape</h4>
+    <div class="image-container">
+        <img src="./result/moon_phase.jpg" alt="Moon Phase">
+        <img src="./result/cityscape.jpg" alt="Cityscape">
+    </div>
+    
+    <h4>Blended Moon and Cityscape</h4>
+    <img src="./result/moon_cityscape.jpg" alt="Blended Moon and Cityscape">
+
+    <h4>Window and Space</h4>
+    <div class="image-container">
+        <img src="./result/window.jpg" alt="Window">
+        <img src="./result/space.jpeg" alt="Space">
+    </div>
+    
+    <h4>Blended Window and Space</h4>
+    <img src="./result/window_space.jpg" alt="Blended Window and Space">
+
+    
+    
+</body>
+</html> 
