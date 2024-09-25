@@ -16,11 +16,14 @@
         .image-container img {
             flex: 1 1 45%;
             margin-right: 10px;
-            max-width: 30%; height: auto;
+            max-width: 50%; height: auto;
         }
     </style>
   <h3> 1.1 Finite Difference Operator</h3>
   <div class="image-container">
+    <p>
+        The gradient magnitude measures the rate of intensity change in an image. It is calculated using finite difference operators (Gx and Gy) to estimate horizontal and vertical changes. The results are combined using the Euclidean norm to highlight edges. Binarization can then be applied to create a binary representation of detected edges.
+    </p>
     <h4>Original Image - Cameraman</h4>
     <img src="./result/original_camerman.jpg" alt="Original Image - Cameraman">
     
@@ -42,6 +45,15 @@
 
         <h4>Blurred Gm | Gm - Binarized</h4>
         <img src="./result/Blurred_Gm_binarized.jpg" alt="Blurred Gm | Blurred Gm - Binarized">
+
+        <h3>Differences Observed</h3>
+    <p>Applying a Gaussian filter before using the finite difference operator creates a blurred version of the image, which significantly reduces noise. This smoothing results in cleaner gradient images, allowing for sharper edge detection and a more accurate representation of the image's features.</p>
+    
+    <h3>Using Derivative of Gaussian Filters</h3>
+    <p>By convolving the Gaussian filter with the derivative operators \(D_x\) and \(D_y\), we create Derivative of Gaussian (DoG) filters. This method simplifies the process, combining smoothing and differentiation into one step.</p>
+    
+    <h3>Verification of Results</h3>
+    <p>The resulting gradient images from the DoG filters closely resemble those from the two-step process, confirming that this approach effectively detects edges while maintaining clarity.</p>
     </div>
     
         <h3>2.1 Unsharp Masking</h3>
@@ -49,14 +61,15 @@
         <h4>Taj Mahal</h4>
         <img src="./result/taj_sharpened.jpg" alt="Blurred | Sharpened Taj Mahal">
 
-        <h4>Flower</h4>
+        <h4>Flower </h4>
         <img src="./result/flower_sharpened.jpg" alt="Blurred | Sharpened Flower">
 
         <h4>Monet</h4>
         <img src="./result/monet_sharpened.jpg" alt="Blurred | Sharpened Monet">
 
-        <h4>Moon</h4>
+        <h4>Moon (After blurring and sharpened) </h4>
         <img src="./result/moon_sharpened.jpg" alt="Blurrd | Sharpened Moon">
+        <p>Sharpening the blurred image brought back some detail but was not as sharp as the original image.</p>
     </div>
     
     <h3>2.2 Hybrid Images</h3>
@@ -70,7 +83,7 @@
         <h4>Duck</h4>
         <img src="./result/fft_duck.jpg" alt="FFT Duck">
 
-        <h4>Donald and Duck Hybrid</h4>
+        <h4>Donald and Duck Hybrid - Failure</h4>
         <img src="./result/donald_duck_hybrid.jpg" alt="Donald Duck Hybrid">
 
         <h4>Lion</h4>
@@ -81,24 +94,27 @@
 
         <h4>Lion and Zebra Hybrid</h4>
         <img src="./result/lion_zebra_hybrid.jpg" alt="Lion Zebra Hybrid">
+
+        <h3>Bells & Whistles</h3>
+    <p>I experimented with using color to enhance the effect. In my tests, applying color to both the high-frequency and low-frequency components produced the best results, providing a more detailed representation of the image.</p>
     </div>
     <h3>2.3 Gaussian and Laplacian Stacks</h3>
     <p>This section demonstrates the Gaussian and Laplacian stacks generated for different images.</p>
     
     <div class="image-container">
         <h4>Apple Image Stacks</h4>
-        <img src="result/apple_level_1.jpg" alt="Apple Gaussian | Laplacian Level 1">
-        <img src="result/apple_level_2.jpg" alt="Apple Gaussian | Laplacian Level 2">
-        <img src="result/apple_level_3.jpg" alt="Apple Gaussian | Laplacian Level 3">
-        <img src="result/apple_level_4.jpg" alt="Apple Gaussian | Laplacian Level 4">
-        <img src="result/apple_level_5.jpg" alt="Apple Gaussian | Laplacian Level 5">
+        <img src="result/apple_level_1.jpg" alt="Apple Gaussian | Laplacian Level 1"><br>
+        <img src="result/apple_level_2.jpg" alt="Apple Gaussian | Laplacian Level 2"><br>
+        <img src="result/apple_level_3.jpg" alt="Apple Gaussian | Laplacian Level 3"><br>
+        <img src="result/apple_level_4.jpg" alt="Apple Gaussian | Laplacian Level 4"><br>
+        <img src="result/apple_level_5.jpg" alt="Apple Gaussian | Laplacian Level 5"><br>
 
         <h4>Orange Image Stacks</h4>
-        <img src="result/orange_level_1.jpg" alt="Orange Gaussian | Laplacian Level 1">
-        <img src="result/orange_level_2.jpg" alt="Orange Gaussian | Laplacian Level 2">
-        <img src="result/orange_level_3.jpg" alt="Orange Gaussian | Laplacian Level 3">
-        <img src="result/orange_level_4.jpg" alt="Orange Gaussian | Laplacian Level 4">
-        <img src="result/orange_level_5.jpg" alt="Orange Gaussian | Laplacian Level 5">
+        <img src="result/orange_level_1.jpg" alt="Orange Gaussian | Laplacian Level 1"><br>
+        <img src="result/orange_level_2.jpg" alt="Orange Gaussian | Laplacian Level 2"><br>
+        <img src="result/orange_level_3.jpg" alt="Orange Gaussian | Laplacian Level 3"><br>
+        <img src="result/orange_level_4.jpg" alt="Orange Gaussian | Laplacian Level 4"><br>
+        <img src="result/orange_level_5.jpg" alt="Orange Gaussian | Laplacian Level 5"><br>
     </div>
     
     <h3>2.4 Blending Images</h3>
