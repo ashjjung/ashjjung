@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project 3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px auto;
+            max-width: 1000px; 
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 66%; 
+            margin: 0 auto; 
+        }
+        .image-container figure {
+            margin: 0;
+            flex: 1; 
+            text-align: center;
+            max-width: 66%; 
+            margin: 0 10px;
+        }
+        figure {
+            margin: 0;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            max-width: 66%; 
+            height: auto;
+        }
+        figcaption {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        @media (max-width: 800px) {
+            .image-container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+            .image-container figure {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Project 3 - Face Morphing</h1>
+
+<h2>Part 1: Defining Correspondences</h2>
+<p>Here are the original images of Chris Evans and Chris Hemsworth.</p>
+<div class="image-container">
+    <figure>
+        <img src="data/a.jpg" alt="Chris Evans">
+        <figcaption>Figure 1: Chris Evans</figcaption>
+    </figure>
+    <figure>
+        <img src="data/b.jpg" alt="Chris Hemsworth">
+        <figcaption>Figure 2: Chris Hemsworth</figcaption>
+    </figure>
+</div>
+
+<p>I established point correspondences between two images to determine how one image maps onto the other. 
+    Using the provided correspondence tool, I selected key facial features and included the image corners to ensure accurate mapping. 
+    After computing the average points, I created a Delaunay triangulation based on this average shape. 
+    Below are two images displaying the triangulated faces of Chris Evans and Chris Hemsworth.</p>
+
+<div class="image-container">
+    <figure>
+        <img src="output/imgA_tri.jpg" alt="Triangulation on Chris Evans">
+        <figcaption>Figure 3: Triangulation on Chris Evans</figcaption>
+    </figure>
+    <figure>
+        <img src="output/imgB_tri.jpg" alt="Triangulation on Chris Hemsworth">
+        <figcaption>Figure 4: Triangulation on Chris Hemsworth</figcaption>
+    </figure>
+</div>
+
+<h2>Part 2: Mid-way Face</h2>
+<p>I generated a mid-way face by blending both the shape and appearance of the two original images. This process involved several steps:</p>
+
+<p><strong>1. Computing the Average Shape:</strong></p>
+<p>I calculated the average positions of the corresponding key points from both images using the formula:</p>
+<p style="text-align: center; font-style: italic;">average_points = (1 – warp_fraction) × imageA_points + warp_fraction × imageB_points</p>
+<p>With a warp fraction of 0.5, this effectively averages the coordinates of each corresponding point.</p>
+
+<p><strong>Delaunay Triangulation:</strong></p>
+<p>Using the averaged key points, I created a Delaunay triangulation. This divides the face into a network of non-overlapping triangles, which is crucial for piecewise affine transformations.</p>
+
+<p><strong>Affine Transformations for Each Triangle:</strong></p>
+<p>For each triangle in the triangulation, I computed two affine transformation matrices:</p>
+<ul>
+    <li>One mapping the triangle from the average shape to the corresponding triangle in the first image.</li>
+    <li>Another mapping to the corresponding triangle in the second image.</li>
+</ul>
+<p>This was achieved using the <code>computeAffine</code> function, which solves for the affine transformation matrix that aligns the points of one triangle to another.</p>
+
+<p><strong>Warping Both Images into the Average Shape:</strong></p>
+<ol>
+    <li>Apply the affine transformations to warp the pixels from both original images into the average shape.</li>
+    <li>Transform the coordinates of the pixels within each triangle to align with the average shape.</li>
+    <li>Interpolate the pixel values at these transformed coordinates.</li>
+</ol>
+
+<p><strong>Cross-Dissolving Colors:</strong></p>
+<p>After warping, I blended the colors of the two images by averaging their pixel values using the formula:</p>
+<p style="text-align: center; font-style: italic;">blended_pixels = (1 – dissolve_fraction) × pixels_from_imageA + dissolve_fraction × pixels_from_imageB</p>
+<p>With a dissolve fraction of 0.5, this results in an equal mix of colors from both images.</p>
+
+<p><strong>Reconstructing the Mid-way Face:</strong></p>
+<p>I assembled the blended pixels of all triangles to form the complete mid-way face.</p>
+<div class="image-container">
+    <figure>
+        <img src="output/avg_face.jpg" alt="Mid-way Face">
+        <figcaption>Figure 5: Mid-way Face</figcaption>
+    </figure>
+</div>
+
+<h2>Part 3: The Morph Sequence</h2>
+<p>A morph sequence is generated by creating a series of intermediate images that gradually transform one face into the other(from part 2). I increased the warp and dissolve fractions [0,1] over 45 frames to produce a smooth animation.</p>
+
+<div class="image-container">
+    <figure>
+        <img src="output/morph_gif.gif" alt="Morph Sequence GIF">
+        <figcaption>Figure 6: GIF [RELOAD the site to reset]</figcaption>
+    </figure>
+</div>
+
+</body>
+</html>
+
+<h2>Part 4: The "Mean Face" of a Population</h2>
+<p>In Part 4, I computed the <strong>mean face</strong> of a population using a set of faces from a danes database. The goal was to find the average facial structure and appearance.</p>
+
+<p>The process involved the following steps:</p>
+<ol>
+    <li>Calculate the <strong>average shape</strong> of all the faces.</li>
+    <li>Warp each face in the database into the average shape using the <strong>same logic as Part 2</strong>, which involves affine transformations and pixel interpolation.</li>
+    <li>Compute the <strong>mean face</strong> by averaging the pixel values of all the warped images.</li>
+</ol>
+
+<p>Below is the resulting "Mean Face" of the population:</p>
+<div class="image-container">
+    <figure>
+        <img src="output/warped_avg.jpg" alt="Mean Face of the Population">
+        <figcaption>Figure 8: Mean Face of the Population</figcaption>
+    </figure>
+</div>
+
+<p>Here are some examples of the population morphed into the mean face: </p>
+<div class="image-container">
+    <figure>
+        <img src="output/morphed_21.jpg" alt="21">
+        <figcaption>Figure 9: Morphed into the "mean" face</figcaption>
+    </figure>
+    <figure>
+        <img src="output/morphed_22.jpg" alt="22">
+        <figcaption>Figure 10: Morphed into the "mean" face</figcaption>
+    </figure>
+</div>
+
+<div class="image-container">
+    <figure>
+        <img src="output/morphed_23.jpg" alt="23">
+        <figcaption>Figure 11: Morphed into the "mean" face</figcaption>
+    </figure>
+    <figure>
+        <img src="output/morphed_24.jpg" alt="24">
+        <figcaption>Figure 12: Morphed into the "mean" face</figcaption>
+    </figure>
+</div>
+
+<p>Morphing my face and the "mean" face: </p>
+<div class="image-container">
+    <figure>
+        <img src="output/me_warped.jpg" alt="23">
+        <figcaption>Figure 13: My face warped into the average geometry</figcaption>
+    </figure>
+    <figure>
+        <img src="output/warped_avg_warped.jpg" alt="24">
+        <figcaption>Figure 14: Average face warped into my geometry</figcaption>
+    </figure>
+</div>
+
+
+<h2>Part 5: Caricatures - Extrapolating from the Mean</h2>
+<p>I created caricatures by exaggerating the differences between my face and the mean face. This is done by <strong>extrapolating from the mean</strong>, pushing the features further away from the average. The same affine transformations and pixel interpolation logic from <strong>Part 2</strong> are used to warp the faces, but this time I manipulated the <strong>warp_frac</strong> value to amplify or reduce the differences from the mean face.</p>
+
+<p><strong>Negative factor (warp_frac = -0.5)</strong>: This creates a caricature where the features are pulled toward the mean face, reducing unique characteristics.</p>
+
+<div class="image-container">
+    <figure>
+        <img src="output/caric1.jpg" alt="Negative Alpha Caricature">
+        <figcaption>Figure 15: Negative factor</figcaption>
+    </figure> 
+</div>
+<p><strong>Positive factor (warp_frac = 0.5)</strong>: This creates a caricature where the unique features are pushed further away from the mean, emphasizing their differences from the average.</p>
+
+<div class="image-container">
+    <figure>
+        <img src="output/caric2.jpg" alt="Positive Alpha Caricature">
+        <figcaption>Figure 16: Positive factor</figcaption>
+    </figure>
+</div>
+
+<h2>Bells & Whistles</h2>
+<p>As part of the Bells & Whistles, I changed the gender of my friend's face using average Korean women face:</p>
+
+<div class="image-container">
+    <figure>
+        <img src="data/mark.jpg" alt="23">
+        <figcaption>Figure 17: Mark</figcaption>
+    </figure>
+    <figure>
+        <img src="data/avg_kor.jpg" alt="24">
+        <figcaption>Figure 18: Average Korean Women</figcaption>
+    </figure>
+</div>
+<p>I tinkered around with the image by only warping, only cross dissolving, and both. </p>
+
+<div class="image-container">
+    <figure>
+        <img src="output/mark_shape.jpg" alt="mark_shape">
+        <figcaption>Figure 19: Shape only</figcaption>
+    </figure>
+    <figure>
+        <img src="output/mark_appr.jpg" alt="mark_appr">
+        <figcaption>Figure 20: Appearance only</figcaption>
+    </figure>
+    <figure>
+        <img src="output/mark_both.jpg" alt="both">
+        <figcaption>Figure 21: Both</figcaption>
+    </figure>
+</div>
