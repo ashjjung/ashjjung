@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Project 3</title>
     <style>
         body {
@@ -14,9 +15,8 @@
         }
         .image-container {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            max-width: 66%; 
+            align-items: center;
+            width: 80%; 
             margin: 0 auto; 
         }
         .gif-container {
@@ -41,20 +41,19 @@
             margin: 0;
             flex: 1; 
             text-align: center;
-            max-width: 66%; 
-            margin: 0 10px;
+            max-width: 80%; 
+            margin: 10 10px;
         }
         figure {
             margin: 0;
             text-align: center;
         }
         img {
-            width: 100%;
             max-width: 66%; 
             height: auto;
         }
         figcaption {
-            margin-top: 5px;
+            margin: 3px 10px;
             font-size: 0.9em;
             color: #555;
         }
@@ -92,16 +91,6 @@
     After computing the average points, I created a Delaunay triangulation based on this average shape. 
     Below are two images displaying the triangulated faces of Chris Evans and Chris Hemsworth.</p>
 
-<div class="image-container">
-    <figure>
-        <img src="output/imgA_tri.jpg" alt="Triangulation on Chris Evans">
-        <figcaption>Figure 3: Triangulation on Chris Evans</figcaption>
-    </figure>
-    <figure>
-        <img src="output/imgB_tri.jpg" alt="Triangulation on Chris Hemsworth">
-        <figcaption>Figure 4: Triangulation on Chris Hemsworth</figcaption>
-    </figure>
-</div>
 
 <h2>Part 2: Mid-way Face</h2>
 <p>I generated a mid-way face by blending both the shape and appearance of the two original images. This process involved several steps:</p>
@@ -113,6 +102,16 @@
 
 <p><strong>Delaunay Triangulation:</strong></p>
 <p>Using the averaged key points, I created a Delaunay triangulation. This divides the face into a network of non-overlapping triangles, which is crucial for piecewise affine transformations.</p>
+<div class="image-container">
+    <figure>
+        <img src="output/imgA_tri.jpg" alt="Triangulation on Chris Evans">
+        <figcaption>Figure 3: Triangulation on Chris Evans</figcaption>
+    </figure>
+    <figure>
+        <img src="output/imgB_tri.jpg" alt="Triangulation on Chris Hemsworth">
+        <figcaption>Figure 4: Triangulation on Chris Hemsworth</figcaption>
+    </figure>
+</div>
 
 <p><strong>Affine Transformations for Each Triangle:</strong></p>
 <p>For each triangle in the triangulation, I computed two affine transformation matrices:</p>
@@ -136,7 +135,7 @@
 
 <p><strong>Reconstructing the Mid-way Face:</strong></p>
 <p>I assembled the blended pixels of all triangles to form the complete mid-way face.</p>
-<div class="image-container">
+<div class="img">
     <figure>
         <img src="output/avg_face.jpg" alt="Mid-way Face">
         <figcaption>Figure 5: Mid-way Face</figcaption>
@@ -176,7 +175,7 @@
 </ol>
 
 <p>Below is the resulting "Mean Face" of the population:</p>
-<div class="image-container">
+<div class="img">
     <figure>
         <img src="output/warped_avg.jpg" alt="Mean Face of the Population">
         <figcaption>Figure 8: Mean Face of the Population</figcaption>
@@ -222,20 +221,20 @@
 <h2>Part 5: Caricatures - Extrapolating from the Mean</h2>
 <p>I created caricatures by exaggerating the differences between my face and the mean face. This is done by <strong>extrapolating from the mean</strong>, pushing the features further away from the average. The same affine transformations and pixel interpolation logic from <strong>Part 2</strong> are used to warp the faces, but this time I manipulated the <strong>warp_frac</strong> value to amplify or reduce the differences from the mean face.</p>
 
-<p><strong>Negative factor (warp_frac = -0.5)</strong>: This creates a caricature where the features are pulled toward the mean face, reducing unique characteristics.</p>
+<p><strong>Negative alpha (&alpha; = -0.5)</strong>: This creates a caricature where the features are pulled toward the mean face, reducing unique characteristics.</p>
 
 <div class="image-container">
     <figure>
         <img src="output/caric1.jpg" alt="Negative Alpha Caricature">
-        <figcaption>Figure 15: Negative Alpha</figcaption>
+        <figcaption>Figure 15: &alpha; = -0.5</figcaption>
     </figure> 
 </div>
-<p><strong>Positive factor (warp_frac = 0.5)</strong>: This creates a caricature where the unique features are pushed further away from the mean, emphasizing their differences from the average.</p>
+<p><strong>Positive alpha (&alpha; = 0.5)</strong>: This creates a caricature where the unique features are pushed further away from the mean, emphasizing their differences from the average.</p>
 
 <div class="image-container">
     <figure>
         <img src="output/caric2.jpg" alt="Positive Alpha Caricature">
-        <figcaption>Figure 16: Positive Alpha</figcaption>
+        <figcaption>Figure 16: &alpha; = +0.5</figcaption>
     </figure>
 </div>
 
