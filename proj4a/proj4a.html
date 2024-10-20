@@ -2,7 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Project 3</title>
+    <meta content="width=device-width">
+    <title>Project 4a</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,24 +20,7 @@
             width: 80%; 
             margin: 0 auto; 
         }
-        .gif-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        button {
-            margin-top: 10px;
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
+        
         .image-container figure {
             margin: 0;
             flex: 1; 
@@ -57,6 +41,29 @@
             font-size: 0.9em;
             color: #555;
         }
+        .equation {
+            font-family: 'Courier New', monospace;
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .fraction {
+            display: inline-block;
+            text-align: center;
+        }
+        .fraction .numerator {
+            border-bottom: 1px solid #000;
+            display: block;
+            padding-bottom: 2px;
+        }
+        .fraction .denominator {
+            display: block;
+            padding-top: 2px;
+        }
+        p {
+            margin: 10px 0;
+        }
         @media (max-width: 800px) {
             .image-container {
                 flex-direction: column;
@@ -68,15 +75,190 @@
             }
         }
     </style>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>
 </head>
 <body>
     
 <h1>Project 4a - Image Warping and Mosaicing</h1>
 <h2>Part 1: Shoot the Pictures</h2>
-<h2>Part 2: Recover Homography Matrices</h2>
-<h2>Part 3: Image Warping</h2>
-<h2>Part 4: Rectification</h2>
-<h2>Part 5: Blend the images into a mosaic</h2>
-<h2>Reflection</h2>
+<p> I took photos with my phone from three distinct locations, rotating the camera at each spot.</p>
+<p> Original images:</p>
+<div class="image-container">
+    <figure>
+        <img src="data/a.jpg" alt="a">
+    </figure>
+    <figure>
+        <img src="data/b.jpg" alt="b">
+    </figure>
+</div>
 
+<div class="image-container">
+    <figure>
+        <img src="data/c.jpg" alt="c">
+    </figure>
+    <figure>
+        <img src="data/d.jpg" alt="d">
+    </figure>
+</div>
+
+<div class="image-container">
+    <figure>
+        <img src="data/g.jpg" alt="g">
+    </figure>
+    <figure>
+        <img src="data/h.jpg" alt="h">
+    </figure>
+</div>
+<h2>Part 2: Recover Homography Matrices</h2>
+<h3>Homography Equation</h3>
+    <p>
+        A homography matrix \( H \) relates points in one image to corresponding points in another image:
+    </p>
+    <div class="equation">
+        \[
+        \begin{bmatrix}
+        x' \\
+        y' \\
+        1
+        \end{bmatrix}
+        =
+        H \cdot
+        \begin{bmatrix}
+        x \\
+        y \\
+        1
+        \end{bmatrix}
+        \]
+    </div>
+    
+    <p>Expanding above,</p>
+    <div class="equation">
+        \[
+        x' = \frac{H[0,0] \cdot x + H[0,1] \cdot y + H[0,2]}{H[2,0] \cdot x + H[2,1] \cdot y + H[2,2]}
+        \]
+        \[
+        y' = \frac{H[1,0] \cdot x + H[1,1] \cdot y + H[1,2]}{H[2,0] \cdot x + H[2,1] \cdot y + H[2,2]}
+        \]
+    </div>
+
+    <h3>Linear System Setup</h3>
+    <p>
+        For each pair of corresponding points \( (x, y) \) and \( (x', y') \), two equations can be set up:
+    </p>
+    <div class="equation">
+        <p>\( H[0,0] \cdot x + H[0,1] \cdot y + H[0,2] - x' \cdot (H[2,0] \cdot x + H[2,1] \cdot y + H[2,2]) = 0 \)</p>
+        <p>\( H[1,0] \cdot x + H[1,1] \cdot y + H[1,2] - y' \cdot (H[2,0] \cdot x + H[2,1] \cdot y + H[2,2]) = 0 \)</p>
+    </div>
+
+    <h3>Matrix Formulation</h3>
+    <p>
+        We build a matrix \( A \) from the equations above. For each point pair, we have:
+    </p>
+    <div class="equation">
+        <p>\([x, y, 1, 0, 0, 0, -x' \cdot x, -x' \cdot y, -x']\)</p>
+        <p>\([0, 0, 0, x, y, 1, -y' \cdot x, -y' \cdot y, -y']\)</p>
+    </div>
+    <p>
+        This produces a system \( A \cdot h = 0 \), where \( h \) is a vector of the 8 unknowns in \( H \).
+    </p>
+
+    <h3>Solving Using SVD</h3>
+    <p>
+        To solve for \( H \), I used Singular Value Decomposition (SVD). The solution is the eigenvector corresponding to the smallest singular value of \( A \). This provides the most stable estimate for \( H \).
+    </p>
+
+<h2>Part 3: Image Warping</h2>
+<p></p>
+    The <code>warpImage</code> function takes an image and a homography matrix <code>H</code> as inputs to warp the image according to the transformation described by <code>H</code>. The function defines the four corners of the image and applies the inverse of the homography matrix to transform these corners, calculating the minimum and maximum x and y coordinates to determine the size of the output canvas. If the transformed coordinates extend beyond the image boundaries, it calculates offsets to ensure the entire transformed image fits within the new canvas dimensions.
+</p>
+<p>
+    The function uses these transformed coordinates to generate a polygon that encompasses the new boundaries. It then constructs the homogeneous coordinates of points within this polygon and maps them back to the source image using the homography matrix. To perform this transformation, the function uses inverse mapping and normalizes the coordinates.
+</p>
+<p>
+    Next, it creates a grid of points corresponding to the pixel locations in the source image, and initializes an empty canvas for the warped image with the computed size. The function then applies <code>scipy.interpolate.griddata</code> to interpolate pixel values from the source image for each channel individually. It uses the nearest neighbor method to fill the pixels in the warped image based on the transformed coordinates.
+</p>
+<p>
+    Finally, the function assigns the interpolated pixel values to the appropriate locations in the new canvas. 
+</p>
+<p> Here are the wraped results: </p>
+<div class="image-container">
+    <figure>
+        <img src="output/b_warp.jpg" alt="b_warp">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/d_warp.jpg" alt="d_warp">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/h_warp.jpg" alt="h_warp">
+    </figure>
+</div>
+
+<h2>Part 4: Rectification</h2>
+<p></p>
+    To rectify images, the <code>warpImage</code> function is used with inverse warping. Inverse warping involves applying the inverse of the homography matrix, which transforms the coordinates of the distorted image back to their original, undistorted positions. 
+</p>
+<p>
+    By using inverse warping, the function interpolates pixel values from the source image to fit a new, rectified view. The result is an image that appears as if it were taken from a frontal perspective.
+</p>
+<div class="image-container">
+    <figure>
+        <img src="output/rectify1.jpg" alt="rectify1">
+    </figure>
+    <figure>
+        <img src="output/rectify2.jpg" alt="rectify2">
+    </figure>
+</div>
+
+
+<h2>Part 5: Blend the images into a mosaic</h2>
+<p>
+    This process combines two images using Laplacian stack from project 2. The blending process involves the following steps:
+</p>
+<ol>
+    <li>
+        <strong>Image Warping:</strong> The second image is warped using <code>warpImage</code> function from previous parts.
+    </li>
+    <li>
+        <strong>Canvas Creation:</strong> A larger canvas is created to accommodate both the first and the warped second image. 
+    </li>
+    <li>
+        <strong>Mask Generation:</strong> A mask is generated to differentiate between regions where only the first image, only the second image, and the overlapping areas exist. In the overlapping regions, a gradient is created using distance transforms, which allows for a smooth transition between the two images.
+    </li>
+    <li>
+        <strong>Gaussian and Laplacian Pyramids:</strong> Gaussian and Laplacian pyramids are created for both images. The mask is also processed with Gaussian pyramids to match the levels of the image pyramids.
+    </li>
+    <li>
+        <strong>Blending Process:</strong> The images are blended using the pyramids and the generated mask. The mask ensures a smooth transition in the overlapping region, where the blending weights vary gradually from one image to the other based on the gradient values.
+    </li>
+</ol>
+<p>
+    Here are final results:
+</p>
+<div class="image-container"></div>
+    <figure>
+        <img src="output/ab_merge.jpg" alt="ab_merge">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/cd_merge.jpg" alt="cd_merge">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/gh_merge.jpg" alt="gh_merge">
+    </figure>
+</div>
+<h2>Reflection</h2>
+<p> Working with front warping and inverse warping was tricky and required careful consideration of coordinate transformations. It took a significant amount of time to debug, but it was interesting overall as I could experiment with distorting images from different perspectives. 
+</p>
+</br>
+</br>
 </html>
