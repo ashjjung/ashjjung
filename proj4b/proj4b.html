@@ -20,8 +20,8 @@
             font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 20px auto;
-            max-width: 1000px; 
             padding-left: 15px;
+            max-width: 1000px; 
         }
         h1, h2 {
             margin: 20px auto;
@@ -93,7 +93,6 @@
           src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
         </script>
 </head>
-
 
 <body>
 <header>Project 4 : (Auto)Stitching Photo Mosaics</header>
@@ -283,4 +282,180 @@
 <p> Working with front warping and inverse warping was tricky and required careful consideration of coordinate transformations. It took a significant amount of time to debug, but it was interesting overall as I could experiment with distorting images from different perspectives. 
 </p>
 </br>
-</br>
+
+<h1>Part B - Feature Matching for Autostitching</h1>
+<h2>Part 1: Harris Interest Point Detector</h2>
+<p>The <strong>Harris Corner Detector</strong> identifies corners by finding points in an image where the intensity changes significantly in both the <em>x</em> and <em>y</em> directions.</p>
+
+<h3>Process Overview:</h3>
+<ol>
+    <li><strong>Compute Gradients</strong>: Calculate the intensity changes (gradients) in the <em>x</em> and <em>y</em> directions.</li>
+    <li><strong>Corner Response</strong>: Use these gradients to compute a corner response score, which highlights likely corner points.</li>
+    <li><strong>Thresholding</strong>: Keep only points with high corner scores.</li>
+</ol>
+
+<p>I used the provided <code>harris.py</code> code to apply this process. Below is a figure showing the Harris corners overlaid on the image.</p>
+<div class="image-container">
+    <figure>
+        <img src="output/harris_a.jpg" alt="harris_a">
+    </figure>
+    <figure>
+        <img src="output/harris_b.jpg" alt="harris_b">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/harris_c.jpg" alt="harris_c">
+    </figure>
+    <figure>
+        <img src="output/harris_d.jpg" alt="harris_d">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/harris_g.jpg" alt="harris_e">
+    </figure>
+    <figure>
+        <img src="output/harris_h.jpg" alt="harris_f">
+    </figure>
+</div>
+<h2>Part 2: Adaptive Non-Maximal Suppression </h2>
+<h3>Approach:</h3>
+<ol>
+    <li><strong>Compute Corner Responses</strong>: For each point, retrieve the Harris corner response (strength) from <code>h</code> based on the input coordinates <code>coords</code>.</li>
+    
+    <li><strong>Sort by Response Strength</strong>: Sort the coordinates in descending order of their corner response values.</li>
+    
+    <li><strong>Calculate Radius for Suppression</strong>: For each point, calculate a radius representing the minimum distance to any higher-ranked point. This radius is constrained by <code>c_robust=0.9</code>, ensuring that only points with significantly lower responses are suppressed.</li>
+    
+    <li><strong>Select Top Features</strong>: Choose the points with the largest radii up to the specified maximum number of features <code>max_features=250</code>. These points represent the most robust features with good spatial distribution.</li>
+</ol>
+
+<p>The <code>anms</code> function effectively filters out non-robust features while keeping the well-distributed corners. <br>
+    The results below show the key points selected through ANMS:</p>
+<div class="image-container">
+    <figure>
+        <img src="output/anms_a.jpg" alt="anms_a">
+    </figure>
+    <figure>
+        <img src="output/anms_b.jpg" alt="anms_b">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/anms_c.jpg" alt="anms_c">
+    </figure>
+    <figure>
+        <img src="output/anms_d.jpg" alt="anms_d">
+    </figure>
+</div>
+<div class="image-container">
+    <figure>
+        <img src="output/anms_g.jpg" alt="anms_g">
+    </figure>
+    <figure>
+        <img src="output/anms_h.jpg" alt="anms_h">
+    </figure>
+</div>
+<h2>Part 3: Feature Descriptor extraction</h2>
+<h3>Approach:</h3>
+<ol>
+    <li><strong>Patch Extraction</strong>: For each interest point, a <code>40x40</code> patch centered on the point is extracted from the image.</li>
+    
+    <li><strong>Downsampling to 8x8</strong>: The patch is downsampled to an <code>8x8</code> patch.</li>
+    
+    <li><strong>Normalization</strong>: The extracted patch is bias/gain-normalized by subtracting the mean and dividing by the standard deviation.</li>
+    <p> The resulting feature descriptors are used to match the set of images.</p>
+</ol>
+
+<p> Below are the extracted and normalized patches of one of the images:</p>
+<div class="image-container">
+    <figure>
+    <img src="output/feature_desc.jpg" alt="feature_desc">
+    </figure>
+</div>
+
+<h2>Part 4: Feature Matching</h2>
+<p>The feature matching process compares descriptors from two images to identify corresponding features.</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li><strong>Flatten Descriptors</strong>: The descriptors from both images are flattened for easier distance calculation, transforming each descriptor into a 1D vector.</li>
+    
+    <li><strong>Distance Calculation</strong>: For each descriptor in <code>descriptor1</code> (from Image 1), the Euclidean distance to every descriptor in <code>descriptor2</code> (from Image 2) is computed.</li>
+    
+    <li><strong>Find Closest Matches</strong>: The two descriptors with the smallest distances are identified. The nearest descriptor (closest match) and the second nearest are used for comparison.</li>
+    
+    <li><strong>Lowe's Ratio Test</strong>: If the distance to the nearest match is smaller (within the <code>ratio_threshold</code>) than the distance to the second nearest match, the match is retained.</li>
+    
+    <li><strong>Store Matches</strong>: The matched key points are stored.</li>
+</ol>
+
+<p>This matching process yields pairs of points from both images that are likely to correspond. <br>
+    Here are the results of the matched features across the set of images:</p>
+
+    <div style="text-align: center;">
+        <img src="output/matched_ab.jpg" alt="matched_ab">
+    </div>
+    <div style="text-align: center;">
+        <img src="output/matched_cd.jpg" alt="matched_cd">
+    </div>
+    <div style="text-align: center;">
+        <img src="output/matched_gh.jpg" alt="matched_gh">
+    </div>
+
+<h2>Part 5: RANSAC</h2> 
+    <h3>Approach:</h3>
+    <ol>
+        <li><strong>Random Sampling of Feature Pairs</strong>: In each iteration, four feature pairs are randomly selected from the points in both images.</li>
+        
+        <li><strong>Compute Homography Matrix</strong>: A homography matrix <code>H</code> is computed using the selected pairs.</li>
+        
+        <li><strong>Calculate Inliers</strong>: Using <code>H</code>, points from the first image are transformed, and their distances to corresponding points in the second image are calculated. If the distance is below a threshold, the point pair is considered an inlier.</li>
+        
+        <li><strong>Identify Best Inliers</strong>: The set of inliers is tracked across all iterations, and the <code>H</code> with the largest inlier set is retained as the best fit.</li>
+        
+        <li><strong>Recompute Final Homography</strong>: After finding the best set of inliers, a final <code>H</code> is computed using all inliers to increase accuracy.</li>
+    </ol>
+    
+    <p>By iteratively refining the homography based on inliers, RANSAC provides a robust estimate of the transformation.<br>
+        Below are the results of the RANSAC process across the set of images:</p>
+        <div style="text-align: center;">
+            <img src="output/ransac_ab.jpg" alt="ransac_ab">
+        </div>
+        <div style="text-align: center;">
+            <img src="output/ransac_cd.jpg" alt="ransac_cd">
+        </div>
+        <div style="text-align: center;">
+            <img src="output/ransac_gh.jpg" alt="ransac_gh">
+        </div>
+    <h2>Mosaics</h2> 
+    <p>Below are the results of three mosaics: automatically stitched and manually stitched, respectively.</p>
+    <div class="image-container">
+        <figure>
+            <img src="output/autostitch_ab.jpg" alt="autostitch_ab">
+        </figure>
+        <figure>
+            <img src="output/ab_merge.jpg" alt="ab_merge">
+        </figure>
+    </div>
+    <div class="image-container">
+        <figure>
+            <img src="output/autostitch_cd.jpg" alt="autostitch_cd">
+        </figure>
+        <figure>
+            <img src="output/cd_merge.jpg" alt="cd_merge">
+        </figure>
+    </div>
+    <div class="image-container">
+        <figure>
+            <img src="output/autostitch_gh.jpg" alt="autostitch_gh">
+        </figure>
+        <figure>
+            <img src="output/gh_merge.jpg" alt="gh_merge">
+        </figure>
+    </div>
+    <p> There is not a significant visual difference between the manually stitched and automatically stitched versions. Both methods align the images well. The automatic stitching algorithm effectively aligns key features without noticeable misalignments.</p>
+
+</body>
+</html>
