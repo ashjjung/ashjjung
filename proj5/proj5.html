@@ -30,7 +30,7 @@
         .image-container {
             display: flex;
             align-items: center;
-            width: 80%; 
+            width: 90%; 
             margin: 0 auto; 
         }
         
@@ -38,12 +38,20 @@
             margin: 0;
             flex: 1; 
             text-align: center;
-            max-width: 80%; 
+            max-width: 90%; 
             margin: 10 10px;
         }
-        figure {
-            margin: 0;
-            text-align: center;
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 200%;
+        }
+        .center_small {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 15%;
         }
         img {
             max-width: 66%; 
@@ -96,5 +104,123 @@
 
 <body>
     <header>Project 5 : Fun with Diffusion Models! </header>
+    <h1>Part A : The Power of Diffusion Models!</h1>
+    <h2>Part 0: Setup</h2>
 
+    <img src="output/20_prompt_2.jpg" alt="10_steps_prompt_2" class=center>
+    <img src="output/50_prompt_2.jpg" alt="10_steps_prompt_2" class=center>
+    <img src="output/100_prompt_2.jpg" alt="10_steps_prompt_2" class=center>
+
+    <p> -> Used seed = 2024</p>
+    <p> As the number of inference steps increase, rendered image quality increases. 
+        Image rendered with inference steps of 100 is more detailed and clearer. 
+    </p>
+
+    <h2>Part 1: Sampling Loops</h2>
+    <h3> 1.1 Implementing the Forward Process </h3>
+    <div class="image-container">
+        <figure>
+            <img src="output/campanile.jpg">
+            <figcaption> Campanile </figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.1_t250.jpg" alt="10_steps_prompt_0">
+            <figcaption>Noisy Campanile at t = 250</figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.1_t500.jpg" alt="10_steps_prompt_1">
+            <figcaption>Noisy Campanile at t = 500</figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.1_t700.jpg" alt="10_steps_prompt_2">
+            <figcaption>Noisy Campanile at t = 750</figcaption>
+        </figure>
+    </div>
+    
+    <h3> 1.2 Classical Denoising </h3>
+    <div class="image-container">
+        <figure>
+            <img src="output/campanile.jpg">
+            <figcaption> Campanile </figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.2_t250.jpg" alt="10_steps_prompt_0">
+            <figcaption>Gaussian Denoising at t = 250</figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.2_t500.jpg" alt="10_steps_prompt_1">
+            <figcaption>Gaussian Denoising at t = 500.</figcaption>
+        </figure>
+        <figure>
+            <img src="output/1.2_t700.jpg" alt="10_steps_prompt_2">
+            <figcaption>Gaussian Denoising at t = 750</figcaption>
+        </figure>
+    </div>
+    <h3> 1.3 One-Step Denoising </h3>
+
+    <img src="output/1.3.1.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.3.2.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.3.3.png" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.4 Iterative Denoising </h3>
+    <img src="output/1.4_noisy.jpg" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.4_denoised.jpg" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.5 Diffusion Model Sampling </h3>
+    <img src="output/1.5.jpg" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.6 Classifier-Free Guidance (CFG) </h3>
+    <img src="output/1.6.png" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.7 Image-to-image Translation </h3>
+    <img src="output/1.7-1.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7-2.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7-3.png" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.7.1 Editing Hand-Drawn and Web Images </h3>
+    <img src="output/1.7.1_d1.png" alt="10_steps_prompt_2" class=center_small>
+    <img src="output/1.7.1_d1res.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7.1_d2.png" alt="10_steps_prompt_2" class=center_small>
+    <img src="output/1.7.2_d2res.png" alt="10_steps_prompt_2" class=center>
+
+    <h3> 1.7.2 Inpainting </h3>
+    <img src="output/1.7.2_1.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7.2_2.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7.2_3.png" alt="10_steps_prompt_2" class=center>
+    <h3> 1.7.3 Text-Conditional Image-to-image Translation </h3>
+    <img src="output/1.7.3_1.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7.3_2.png" alt="10_steps_prompt_2" class=center>
+    <img src="output/1.7.3_3.png" alt="10_steps_prompt_2" class=center>
+    <h3> 1.8 Visual Anagrams </h3>
+    <h3> 1.9 Hybrid Images </h3></br></br>
+
+    <h1> Part B: Diffusion Models from Scratch! </h2>
+    <h2> Part 1: Training a Single-Step Denoising UNet</h2>
+    <h3> 1.1 Implementing the UNet</h3>
+    <img src="output/b.2.1.png" alt="10_steps_prompt_2" class=center>
+    <h3> 1.2 Using the UNet to Train a Denoiser</h3>
+    <img src="output/2.1_denoiser.png" alt="10_steps_prompt_2" class=center>
+    <h3> 1.2.1 Training </h3>
+    <img src="output/2.1.train_graph.png" class="center">
+    <img src="output/2.1.train.png" class="center">
+    <img src="output/2.1.train-2.png" class="center">
+
+    <h3> 1.2.2 Out-of-Distribution Testing </h3></h1></br>
+    <img src = "output/out_of_dist.png" class="center">
+    <h2> Part 2: Training a Diffusion Model </h2>
+    <h3> 2.1 Adding Time Conditioning to UNet </h3>
+    <img src = "output/time_unet.png" class="center">
+    <h3> 2.2 Training the UNet </h3>
+    <img src = "output/time_unet_alg.png" class="center">
+    <img src = "output/time_unet_graph.png" class="center">
+
+    <h3> 2.3 Sampling from the UNet </h3>
+    <img src = "output/time_unet_e5.png" class="center">
+    <img src = "output/time_unet_20.png" class="center">
+
+    <h3> 2.4 Adding Class-Conditioning to UNet </h3>
+    <img src = "output/class_cond_graph.png" class="center">
+    <h3> 2.5 Sampling from the Class-Conditioned UNet </h3>
+    <img src = "output/class_cond_e5.png" class="center">
+    <img src = "output/class_cond_e20.png" class="center">
 </body>
