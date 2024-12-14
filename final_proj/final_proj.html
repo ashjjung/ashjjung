@@ -238,7 +238,7 @@ This process reconstructs the original image by preserving its gradients and mat
                 A sparse matrix (<code>gradient_matrix</code>) is constructed to represent the relationships between pixels in the image. 
             </li>
             <li>
-                A target vector (<code>target_vector</code>) is created to store the average RGB intensity for each pixel in the image, ensuring that the grayscale output retains the same overall brightness as the input.
+                A target vector (<code>target_vector</code>) is created to store the average RGB intensity for each pixel in the image.
             </li>
             <li>
                 <code>scipy.sparse.linalg.lsqr</code> is used to compute the grayscale intensity for each pixel, minimizing the difference between the original and reconstructed gradients.
