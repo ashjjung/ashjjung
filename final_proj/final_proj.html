@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Final Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px auto;
+            max-width: 1000px; 
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .image-container {
+            display: flex;
+            align-items: center;
+            width: 80%; 
+            margin: 0 auto; 
+        }
+        .gif-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .image-container figure {
+            margin: 0;
+            flex: 1; 
+            text-align: center;
+            max-width: 80%; 
+            margin: 10 10px;
+        }
+        figure {
+            margin: 0;
+            text-align: center;
+        }
+        img {
+            max-width: 66%; 
+            height: auto;
+        }
+        figcaption {
+            margin: 3px 10px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        @media (max-width: 800px) {
+            .image-container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+            .image-container figure {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Final Project</h1>
+
+<h2 >Light Field Camera </h2>
+<h3> Depth Refocusing </h3>
+<p>
+    The <code>refocus</code> function simulates depth refocusing using the Chess dataset from the Stanford Light Field Archive. 
+    The light field is represented as a <strong>17x17</strong> grid of images, each capturing the scene from a slightly different viewpoint. 
+    The function computes pixel shifts for each sub-image based on its position relative to the center image <code>(8, 8)</code> in the grid. 
+    These shifts are scaled by a depth factor <code>c</code>, which determines the depth plane to focus on. 
+    By rolling the sub-images horizontally and vertically using <code>numpy.roll</code>, the function aligns them to simulate focusing at the desired depth. 
+    The shifted images are then combined (outside the function) to produce a single refocused image, creating the effect of adjusting the focal plane post-capture.</br>
+</p>
+
+<p> Below is the GIF by iterating over depth scaling constants ranging from -1 to 3 with an increment of 0.2, generating refocused images for each constant: </p>
+<div class="gif-container">
+    <figure>
+        <img id="refocus-gif" src="output/refocused.gif" alt="refocus GIF">
+        <figcaption>Figure 1: Refocus GIF</figcaption>
+    </figure>
+    <button onclick="resetGif('refocus-gif')">Reset GIF</button>
+</div>
+
+<h3> Aperture Adjustment </h3>
+
+<p>Averaging multiple images sampled over a grid perpendicular to the optical axis mimics a camera with a larger aperture by integrating light rays 
+    from a wider range of angles. This increases light-gathering capability and reduces depth of field, 
+    making objects at the focal plane sharper while blurring out-of-focus areas.</br></p>
+<p>The <code>refocus_with_aperture</code> function simulates depth refocusing with an adjustable aperture
+    by selecting and shifting images within a specified range around the grid center.
+     The shifts align the images to a specific depth plane based on a <code>depth_factor</code>, 
+     and averaging the shifted images produces a refocused image with depth-of-field effects 
+     corresponding to the chosen aperture size.</p>
+<p> Below is the GIF of aperture adjustment using radii ranging from 0 to 10 (increments of 10) and a depth factor of 1.5. </p>
+<div class="gif-container">
+    <figure>
+        <img id="aperture-gif" src="output/aperture.gif" alt="aperture GIF">
+        <figcaption>Figure 2: Aperture GIF</figcaption>
+    </figure>
+    <button onclick="resetGif('aperture-gif')">Reset GIF</button>
+</div>
+
+<script>
+    function resetGif(gifId) {
+        const gifElement = document.getElementById(gifId);
+        gifElement.src = gifElement.src; // Reloads the GIF
+    }
+</script>
+
+<h3> Summary </h3>
+<p>
+From this project, I learned that light fields capture both the brightness and direction of light, allowing for effects like changing focus or adjusting the blur after taking a photo.
+ It showed how we can use light field grids to simulate depth and aperture effects with simple techniques.
+</p>
+
+<h2>Gradient Domain Fusion</h2>
+<h3>Toy Problem</h3>
+<p>
+In this implementation, the goal was to reconstruct an image <code>v</code> by solving a set of least squares constraints based on the gradients of an input image <code>s</code>. This is achieved by rewriting the problem in the form <code>(Av - b)^2</code>, where:
+</p>
+<ul>
+    <li><code>A</code> is a sparse matrix representing the relationship between pixel variables.</li>
+    <li><code>v</code> is the set of variables (image intensities) to be solved.</li>
+    <li><code>b</code> is a known vector derived from the gradients of the input image.</li>
+</ul>
+<p>
+The implementation follows three main objectives:
+</p>
+<ol>
+    <li>
+        Minimize the difference between the x-gradients of <code>s</code> and <code>v</code>. This is achieved by iterating over all pixels in the image except the last column, adding equations to <code>A</code> and <code>b</code> for the horizontal gradient constraints.
+    </li>
+    <li>
+        Minimize the difference between the y-gradients of <code>s</code> and <code>v</code>. Similarly, this is done by iterating over all pixels except the last row and adding equations for the vertical gradient constraints.
+    </li>
+    <li>
+        Set the intensity of the top-left corner pixel in <code>v</code> to match that of <code>s</code>. 
+    </li>
+</ol>
+<p>
+The sparse matrix <code>A</code> and vector <code>b</code> are constructed based on these objectives. The problem is then solved using the least squares solver <code>scipy.sparse.linalg.lsqr</code>, which computes the reconstructed image <code>v</code>. 
+<p>
+This process reconstructs the original image by preserving its gradients and matching the intensity at a given pixel.
+</p>
+
+<div class="image-container">
+    <figure>
+        <img src="input/toy_problem.png" alt="Toy Originals">
+        <figcaption>Figure 3: Toy Original</figcaption>
+    </figure>
+    <figure>
+        <img src="output/toy_res.png" alt="Result">
+        <figcaption>Figure 4: Result</figcaption>
+    </figure>
+</div>
+
+<h3>Poisson Blending</h3>
+<p>
+    The goal of Poisson blending is to blend a source region into a target image by solving for pixel values in the source region that match the gradients of the source image. This is achieved using the least squares to minimize the constraints:
+    </p>
+    <ol>
+        <li>
+            Match the gradients of the source region: The x and y gradients of the blended region should closely match the source.
+        </li>
+        <li>
+            Ensure smooth boundary transitions: Gradients near the boundary should blend smoothly into the surrounding pixels in the target image.
+        </li>
+    </ol>
+    
+    <p>
+    A sparse matrix <code>A</code> and a vector <code>b</code> are constructed to represent the blending constraints. Each equation in the system corresponds to a pixel in the source.
+    </p>
+    <ul>
+        <li>Gradient Matching: For each pixel in the source region, equations are added to ensure the x and y gradients match those of the source.</li>
+        <li>Boundary Constraints: For pixels near the boundary, equations are added to ensure a smooth transition to the target image's neighboring pixels.</li>
+    </ul>
+    
+    <p>
+    The least squares problem is solved for each color channel separately using <code>scipy.sparse.linalg.lsqr</code>. The resulting pixel values are used to update the corresponding region in the target image.
+    </p>
+
+    <div class="image-container">
+        <figure>
+            <img src="output/cropped1.png" alt="Edited Target and Source">
+            <figcaption>Figure 5: Edited Target and Source</figcaption>
+        </figure>
+        <figure>
+            <img src="output/poisson_blend1.png" alt="">
+            <figcaption>Figure 6: Result</figcaption>
+        </figure>
+    </div>
+
+    <div class="image-container">
+        <figure>
+            <img src="output/cropped2.png" alt="Edited Target and Source">
+            <figcaption>Figure 7: Edited Target and Source</figcaption>
+        </figure>
+        <figure>
+            <img src="output/poisson_blend2.png" alt="Result">
+            <figcaption>Figure 8: Result</figcaption>
+        </figure>
+    </div>
+
+    <p>Failed: The Poisson blending failed because the blue background of the source image contrasts sharply with the white snow in the target, and the algorithm struggles to preserve the natural colors of the penguin during blending.</p>
+    <div class="image-container">
+        <figure>
+            <img src="output/fail_cropped.png" alt="Edited Target and Source">
+            <figcaption>Figure 9: Edited Target and Source(Failed)</figcaption>
+        </figure>
+        <figure>
+            <img src="output/fail_blend.png" alt="Result">
+            <figcaption>Figure 10: Result(Failed)</figcaption>
+        </figure>
+    </div>
+
+ <h3>Bells and Whistles: Color2Gray</h3>
+ <p>
+    <p>
+        The implemented function <code>color2gray</code> reconstructs the grayscale image by solving a least squares problem to preserve the intensity and gradients from the original image. 
+        </p>
+        <ol>
+            <li>
+                Each pixel is assigned a unique variable index using a mapping matrix (<code>pixel_indices</code>) to track its position in the linear system.
+            </li>
+            <li>
+                A sparse matrix (<code>gradient_matrix</code>) is constructed to represent the relationships between pixels in the image. 
+            </li>
+            <li>
+                A target vector (<code>target_vector</code>) is created to store the average RGB intensity for each pixel in the image, ensuring that the grayscale output retains the same overall brightness as the input.
+            </li>
+            <li>
+                <code>scipy.sparse.linalg.lsqr</code> is used to compute the grayscale intensity for each pixel, minimizing the difference between the original and reconstructed gradients.
+            </li>
+        </ol>
+ </p>
+ <div class="image-container">
+    <figure>
+        <img src="input/colorBlindTest35.png" alt="color">
+        <figcaption>Figure 11: Color</figcaption>
+    </figure>
+    <figure>
+        <img src="output/bw.png" alt="gray">
+        <figcaption>Figure 12: Gray</figcaption>
+    </figure>
+</div>
+</body>
+</html>
