@@ -81,7 +81,7 @@
     The function computes pixel shifts for each sub-image based on its position relative to the center image <code>(8, 8)</code> in the grid. 
     These shifts are scaled by a depth factor <code>c</code>, which determines the depth plane to focus on. 
     By rolling the sub-images horizontally and vertically using <code>numpy.roll</code>, the function aligns them to simulate focusing at the desired depth. 
-    The shifted images are then combined (outside the function) to produce a single refocused image, creating the effect of adjusting the focal plane post-capture.</br>
+    Then, take an average of the sub-images. </br>
 </p>
 
 <p> Below is the GIF by iterating over depth scaling constants ranging from -1 to 3 with an increment of 0.2, generating refocused images for each constant: </p>
@@ -213,7 +213,7 @@ This process reconstructs the original image by preserving its gradients and mat
         </figure>
     </div>
 
-    <p>Failed: The Poisson blending failed because the blue background of the source image contrasts sharply with the white snow in the target, and the algorithm struggles to preserve the natural colors of the penguin during blending.</p>
+    <p>Failed: The Poisson blending failed because the blue background of the source image contrasts sharply with the white snow in the target, as well as struggling to preserve the colors of the penguin during blending.</p>
     <div class="image-container">
         <figure>
             <img src="output/fail_cropped.png" alt="Edited Target and Source">
