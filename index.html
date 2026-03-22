@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashley's Macintosh</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #e3e0da;
+  --bg-pattern: #d7d4ce;
+  --border: #5c5950;
+  --accent: #5a6fa0;
+  --accent-hover: #4a5d8a;
+  --text: #252218;
+  --text-light: #504c42;
+  --white: #f3f1ec;
+  --white-pure: #faf8f4;
+  --shadow: rgba(37, 34, 24, 0.28);
+  --title-bar-inactive: #b5b2aa;
+  --font-size: 12.5px;
+}
+
+/* ═══ DARK MODE ═══ */
+body.dark-mode {
+  --bg: #0e0d0b;
+  --bg-pattern: #1a1916;
+  --border: #8a8578;
+  --accent: #8a9fd0;
+  --accent-hover: #a8b8e0;
+  --text: #f0eeea;
+  --text-light: #b0ada5;
+  --white: #1e1d1a;
+  --white-pure: #262520;
+  --shadow: rgba(0, 0, 0, 0.7);
+  --title-bar-inactive: #3a3832;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ═══ RETRO PIXEL CURSORS (set by JS) ═══ */
+body.dragging, body.dragging * { cursor: inherit !important; }
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ═══ BOOT TERMINAL ═══ */
+#boot-screen {
+  position: fixed; inset: 0;
+  background: #0a0c0e;
+  z-index: 10000;
+  display: flex; flex-direction: column;
+  padding: 40px;
+  overflow: hidden;
+}
+#boot-terminal {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: #4ade80;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+  position: relative; z-index: 2;
+}
+#boot-terminal .dim { color: #2d6a4f; }
+#boot-terminal .bright { color: #86efac; }
+#boot-terminal .white { color: #d1d5db; }
+#boot-terminal .accent { color: #5eead4; }
+#boot-cursor {
+  display: inline-block;
+  width: 10px; height: 18px;
+  background: #4ade80;
+  animation: blink-cursor 0.6s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+@keyframes blink-cursor { 50% { opacity: 0; } }
+/* CRT scanline overlay */
+#boot-screen::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px, transparent 2px,
+    rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none; z-index: 3;
+}
+#boot-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none; z-index: 3;
+}
+#happy-mac-phase {
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  position: absolute; inset: 0;
+  background: var(--bg); z-index: 4;
+}
+#happy-mac { width: 72px; height: 72px; margin-bottom: 20px; image-rendering: pixelated; }
+
+/* ═══ WELCOME DIALOG ═══ */
+#welcome-dialog {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.12);
+  display: none; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.welcome-box {
+  background: var(--white);
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--shadow);
+  padding: 32px 40px; text-align: center; min-width: 340px;
+}
+.welcome-box h2 {
+  font-family: 'VT323', monospace;
+  font-size: 22px; margin-bottom: 22px;
+  font-weight: normal; letter-spacing: 1px; color: var(--text);
+}
+.loading-bar-container {
+  background: var(--white-pure);
+  border: 2px solid var(--border);
+  height: 22px; width: 260px; margin: 0 auto;
+  padding: 3px; display: flex; gap: 2px;
+}
+.loading-segment { flex: 1; background: var(--white-pure); transition: background 0.12s; }
+.loading-segment.filled { background: var(--accent); }
+
+/* ═══ MENU BAR ═══ */
+#menu-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 24px; background: var(--white);
+  border-bottom: 2px solid var(--border);
+  display: none; align-items: center;
+  padding: 0 10px; z-index: 9000;
+  font-family: 'VT323', monospace; font-size: 16px; gap: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
+.apple-logo { font-size: 16px; cursor: pointer; padding: 0 10px 0 2px; }
+.menu-parent {
+  position: relative; cursor: pointer;
+  padding: 1px 10px; line-height: 22px;
+  font-family: 'VT323', monospace; font-size: 16px;
+  user-select: none;
+}
+.menu-parent:hover, .menu-parent.open { background: var(--text); color: var(--white); }
+.menu-dropdown {
+  display: none; position: absolute; top: 22px; left: 0;
+  background: var(--white); border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--shadow);
+  min-width: 180px; z-index: 9999;
+  padding: 2px 0;
+}
+.menu-parent.open .menu-dropdown { display: block; }
+.menu-dropdown .menu-action {
+  display: block; padding: 3px 16px; font-family: 'VT323', monospace;
+  font-size: 15px; color: var(--text); cursor: pointer; white-space: nowrap;
+  line-height: 1.5;
+}
+.menu-dropdown .menu-action:hover { background: var(--accent); color: var(--white); }
+.menu-dropdown .menu-divider {
+  height: 1px; background: var(--border); margin: 3px 8px;
+}
+.menu-dropdown .menu-action.disabled {
+  color: var(--title-bar-inactive); cursor: default;
+}
+.menu-dropdown .menu-action.disabled:hover { background: transparent; color: var(--title-bar-inactive); }
+.menu-action .shortcut {
+  float: right; margin-left: 24px; opacity: 0.6;
+}
+.menu-right { margin-left: auto; font-size: 15px; font-family: 'VT323', monospace; }
+
+/* ═══ DESKTOP ═══ */
+#desktop {
+  position: fixed; top: 24px; left: 0; right: 0; bottom: 0;
+  display: none; overflow: hidden;
+}
+#desktop-bg { position: absolute; inset: 0; z-index: 0; }
+
+/* ═══ DESKTOP ICONS ═══ */
+.desktop-icons {
+  position: absolute; top: 14px; right: 14px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 10;
+}
+.desktop-icon {
+  display: flex; flex-direction: column; align-items: center;
+  width: 74px; padding: 6px 4px; cursor: pointer;
+}
+.desktop-icon:hover .icon-label { text-decoration: underline; }
+.desktop-icon.selected canvas {
+  background: var(--accent); border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.desktop-icon.selected .icon-label { background: var(--accent); color: var(--white); border-radius: 2px; }
+.desktop-icon canvas { width: 32px; height: 32px; margin-bottom: 3px; image-rendering: pixelated; }
+.icon-label {
+  font-family: 'VT323', monospace; font-size: 14px;
+  text-align: center; color: var(--text); padding: 0 4px;
+  word-break: break-word; line-height: 1.2;
+}
+
+/* ═══ WINDOW ═══ */
+.window {
+  position: absolute; background: var(--white);
+  border: 2px solid var(--border); box-shadow: 3px 3px 0 var(--shadow);
+  min-width: 260px; min-height: 140px;
+  display: flex; flex-direction: column;
+  animation: windowOpen 0.18s ease-out;
+  transition: background 0.3s, border-color 0.3s;
+}
+@keyframes windowOpen { from { opacity:0; transform:scale(0.7); } to { opacity:1; transform:scale(1); } }
+
+.title-bar {
+  height: 22px; position: relative; display: flex; align-items: center;
+  cursor: grab; flex-shrink: 0; overflow: hidden;
+  border-bottom: 2px solid var(--border); user-select: none;
+}
+.title-bar-stripes {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(to bottom,
+    var(--accent) 0px, var(--accent) 1px,
+    var(--white) 1px, var(--white) 3px);
+  opacity: 0.45;
+}
+.window.focused .title-bar-stripes {
+  opacity: 1;
+}
+.title-bar .close-box {
+  position: relative; z-index: 2; width: 13px; height: 13px;
+  border: 1.5px solid var(--border); background: var(--white);
+  margin-right: 6px; cursor: pointer; flex-shrink: 0;
+}
+.title-bar .close-box:hover {
+  background: var(--border);
+}
+.title-bar .close-box:hover::before,
+.title-bar .close-box:hover::after {
+  content: ''; position: absolute; background: var(--white);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.title-bar .close-box:hover::before {
+  width: 9px; height: 1.5px; transform: translate(-50%, -50%) rotate(45deg);
+}
+.title-bar .close-box:hover::after {
+  width: 9px; height: 1.5px; transform: translate(-50%, -50%) rotate(-45deg);
+}
+.title-text {
+  position: relative; z-index: 2;
+  font-family: 'VT323', monospace; font-size: 15px;
+  padding: 1px 14px; background: var(--white-pure);
+  border-radius: 9px; white-space: nowrap;
+  margin: 0 auto; text-align: center;
+  border: 1.5px solid var(--border); line-height: 1.2; letter-spacing: 0.5px;
+}
+.title-bar .grow-box {
+  position: relative; z-index: 2; width: 13px; height: 13px;
+  border: 1.5px solid var(--border); background: var(--white);
+  margin-left: 6px; cursor: pointer; flex-shrink: 0;
+}
+.title-bar .grow-box::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px; height: 7px; border: 1.5px solid var(--border);
+}
+.title-bar .grow-box:hover { background: var(--border); }
+.title-bar .grow-box:hover::after { border-color: var(--white); }
+
+.window-content {
+  padding: 18px 20px; overflow-y: auto; flex: 1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--font-size); line-height: 1.65;
+  background: var(--white); color: var(--text);
+  transition: font-size 0.2s, background 0.3s, color 0.3s, border-color 0.3s;
+}
+.window-content h3 {
+  font-family: 'VT323', monospace; font-size: 18px; font-weight: normal;
+  margin-bottom: 8px; border-bottom: 1.5px solid var(--border);
+  padding-bottom: 4px; letter-spacing: 0.5px;
+}
+.window-content p { margin-bottom: 10px; }
+.window-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.window-content a:hover { color: var(--accent-hover); }
+.window-content ul { margin-left: 18px; margin-bottom: 10px; }
+.window-content li { margin-bottom: 4px; }
+
+.resize-handle {
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; z-index: 5;
+}
+.resize-handle::before {
+  content: ''; position: absolute; bottom: 3px; right: 3px;
+  width: 9px; height: 9px;
+  background: linear-gradient(135deg,
+    transparent 30%, var(--border) 30%, var(--border) 38%,
+    transparent 38%, transparent 58%,
+    var(--border) 58%, var(--border) 66%, transparent 66%);
+}
+
+.window-content::-webkit-scrollbar { width: 16px; }
+.window-content::-webkit-scrollbar-track { background: var(--white); border-left: 1.5px solid var(--border); }
+.window-content::-webkit-scrollbar-thumb { background: var(--bg); border: 1.5px solid var(--border); }
+
+/* ═══ PROJECT CARDS ═══ */
+.project-card {
+  border: 1.5px solid var(--border); padding: 12px 14px;
+  margin-bottom: 10px; background: var(--white-pure);
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+.project-card h4 {
+  font-family: 'VT323', monospace; font-size: 17px;
+  font-weight: normal; margin-bottom: 4px; color: var(--accent);
+}
+.project-card p { margin-bottom: 4px; font-size: 12px; }
+.project-card .tags {
+  font-size: 11px; color: var(--text-light); margin-top: 6px;
+  font-family: 'VT323', monospace; letter-spacing: 0.5px;
+}
+
+/* ═══ RESUME ═══ */
+.resume-section { margin-bottom: 16px; }
+.resume-section h4 {
+  font-family: 'VT323', monospace; font-size: 16px; font-weight: normal;
+  margin-bottom: 8px; background: var(--accent); color: var(--white);
+  padding: 2px 10px; display: inline-block; letter-spacing: 0.5px;
+}
+.resume-entry { margin-bottom: 10px; padding-left: 10px; border-left: 2px solid var(--accent); }
+.resume-entry .role { font-weight: 600; font-size: 12.5px; }
+.resume-entry .date { font-size: 11px; color: var(--text-light); }
+.resume-entry p { font-size: 12px; margin-top: 2px; }
+
+/* ═══ LINKS ═══ */
+.links-grid { display: flex; flex-direction: column; gap: 6px; }
+.link-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border: 1.5px solid var(--border);
+  background: var(--white-pure); cursor: pointer;
+  text-decoration: none; color: var(--text);
+  font-family: 'VT323', monospace; font-size: 16px;
+  letter-spacing: 0.5px; transition: all 0.1s;
+}
+.link-row:hover { background: var(--accent); color: var(--white); border-color: var(--accent); }
+.link-row canvas { width: 16px; height: 16px; flex-shrink: 0; image-rendering: pixelated; }
+.link-row:hover canvas { filter: invert(1); }
+
+/* ═══ CONTROL PANEL ═══ */
+.cp-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.cp-row:last-child { border-bottom: none; }
+.cp-label {
+  font-family: 'VT323', monospace; font-size: 16px;
+  letter-spacing: 0.5px;
+}
+.cp-sublabel {
+  font-size: 11px; color: var(--text-light); margin-top: 2px;
+}
+
+/* Toggle switch */
+.toggle {
+  width: 40px; height: 20px; border: 1.5px solid var(--border);
+  background: var(--white-pure); cursor: pointer; position: relative;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle .toggle-knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; background: var(--white);
+  border: 1px solid var(--border); transition: left 0.15s;
+}
+.toggle.on .toggle-knob { left: 22px; }
+
+/* Slider */
+.cp-slider-row { display: flex; align-items: center; gap: 8px; }
+.cp-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100px; height: 6px; background: var(--border);
+  outline: none; cursor: pointer;
+}
+.cp-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--white); border: 1.5px solid var(--border); cursor: pointer;
+}
+.cp-slider-label {
+  font-family: 'VT323', monospace; font-size: 14px;
+  min-width: 22px; text-align: center;
+}
+
+/* Color swatches */
+.cp-swatches { display: flex; gap: 6px; flex-shrink: 0; }
+.cp-swatch {
+  width: 22px; height: 22px; border: 1.5px solid var(--border);
+  cursor: pointer; position: relative; flex-shrink: 0;
+}
+.cp-swatch:hover { border-color: var(--text); }
+.cp-swatch.active::after {
+  content: '✓'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-family: 'VT323', monospace;
+  color: #fff; text-shadow: 0 0 2px rgba(0,0,0,0.6);
+}
+
+/* Pattern selector */
+.cp-patterns { display: flex; gap: 6px; }
+.cp-pattern {
+  width: 32px; height: 24px; border: 1.5px solid var(--border);
+  cursor: pointer; image-rendering: pixelated; overflow: hidden;
+}
+.cp-pattern:hover { border-color: var(--text); }
+.cp-pattern.active { border-color: var(--accent); border-width: 2px; }
+
+/* About this Mac dialog */
+.about-mac { text-align: center; padding: 10px 0; }
+.about-mac canvas { margin: 0 auto 12px; display: block; image-rendering: pixelated; }
+.about-mac h3 {
+  font-family: 'VT323', monospace; font-size: 20px;
+  border: none; text-align: center; font-weight: normal; letter-spacing: 1px;
+}
+.about-mac p { text-align: center; font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+.about-mac .version { font-family: 'VT323', monospace; font-size: 15px; margin-bottom: 10px; }
+.about-mac hr { border: none; border-top: 1.5px solid var(--border); margin: 12px 0; }
+
+/* ═══ MOBILE / RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  #desktop {
+    position: relative;
+    overflow: auto;
+    min-height: 100vh;
+  }
+  #desktop-bg {
+    position: fixed;
+  }
+  .desktop-icons {
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 10px;
+    right: auto;
+    top: auto;
+  }
+  .desktop-icon {
+    width: 70px;
+  }
+  #menu-bar {
+    height: 32px;
+  }
+  .menu-parent {
+    padding: 4px 12px;
+    line-height: 30px;
+  }
+  .menu-right {
+    font-size: 13px;
+  }
+  .window {
+    position: relative !important;
+    width: calc(100% - 16px) !important;
+    height: auto !important;
+    left: 8px !important;
+    top: auto !important;
+    margin-bottom: 12px;
+    box-shadow: 2px 2px 0 var(--shadow);
+  }
+  .window-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .title-bar {
+    height: 28px;
+  }
+  .title-bar .close-box,
+  .title-bar .grow-box {
+    width: 18px;
+    height: 18px;
+  }
+  .resize-handle {
+    display: none;
+  }
+  .welcome-box {
+    min-width: auto;
+    width: 90vw;
+    max-width: 340px;
+  }
+  .cp-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #boot-terminal {
+    font-size: 14px;
+  }
+  #boot-screen {
+    padding: 20px;
+  }
+}
+
+@media (pointer: coarse) {
+  body, body * { cursor: auto !important; }
+  .title-bar { cursor: auto !important; }
+  body.dragging, body.dragging * { cursor: auto !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="boot-screen">
+  <div id="boot-terminal"></div>
+  <div id="happy-mac-phase">
+    <canvas id="happy-mac" width="72" height="72"></canvas>
+  </div>
+</div>
+
+<div id="welcome-dialog">
+  <div class="welcome-box">
+    <h2>Welcome to Macintosh</h2>
+    <div class="loading-bar-container" id="loading-bar"></div>
+  </div>
+</div>
+
+<div id="menu-bar">
+  <span class="apple-logo" onclick="openWindow('about-mac')">&#63743;</span>
+
+  <div class="menu-parent" data-menu="file">
+    File
+    <div class="menu-dropdown">
+      <div class="menu-action" onclick="openWindow('about')">Open About Me</div>
+      <div class="menu-action" onclick="openWindow('projects')">Open Projects</div>
+      <div class="menu-action" onclick="openWindow('resume')">Open Resume</div>
+      <div class="menu-action" onclick="openWindow('links')">Open Links</div>
+      <div class="menu-divider"></div>
+      <div class="menu-action" onclick="closeAllWindows()">Close All <span class="shortcut">⌘W</span></div>
+    </div>
+  </div>
+
+  <div class="menu-parent" data-menu="edit">
+    Edit
+    <div class="menu-dropdown">
+      <div class="menu-action disabled">Undo <span class="shortcut">⌘Z</span></div>
+      <div class="menu-divider"></div>
+      <div class="menu-action disabled">Cut <span class="shortcut">⌘X</span></div>
+      <div class="menu-action" onclick="copyEmail()">Copy Email <span class="shortcut">⌘C</span></div>
+      <div class="menu-action disabled">Paste <span class="shortcut">⌘V</span></div>
+      <div class="menu-divider"></div>
+      <div class="menu-action disabled">Select All <span class="shortcut">⌘A</span></div>
+    </div>
+  </div>
+
+  <div class="menu-parent" data-menu="view">
+    View
+    <div class="menu-dropdown">
+      <div class="menu-action" onclick="toggleDarkMode()">
+        <span id="dm-label">Dark Mode</span>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-action" onclick="changeFontSize(1)">Zoom In <span class="shortcut">⌘+</span></div>
+      <div class="menu-action" onclick="changeFontSize(-1)">Zoom Out <span class="shortcut">⌘−</span></div>
+      <div class="menu-action" onclick="resetFontSize()">Actual Size <span class="shortcut">⌘0</span></div>
+      <div class="menu-divider"></div>
+      <div class="menu-action" onclick="cascadeWindows()">Cascade Windows</div>
+    </div>
+  </div>
+
+  <div class="menu-parent" data-menu="special">
+    Special
+    <div class="menu-dropdown">
+      <div class="menu-action" onclick="openWindow('control-panel')">Control Panel</div>
+      <div class="menu-divider"></div>
+      <div class="menu-action" onclick="openWindow('about-mac')">About This Mac</div>
+      <div class="menu-divider"></div>
+      <div class="menu-action" onclick="location.reload()">Restart <span class="shortcut">⌘R</span></div>
+    </div>
+  </div>
+
+  <span class="menu-right" id="menu-clock"></span>
+</div>
+
+<div id="desktop">
+  <canvas id="desktop-bg"></canvas>
+  <div class="desktop-icons" id="desktop-icons"></div>
+</div>
+
+<script>
+// ═══ RETRO PIXEL CURSORS ═══
+(function() {
+  const B = [0,0,0,255], W = [255,255,255,255], T = [0,0,0,0];
+
+  function drawCursor(pixels, scale) {
+    const h = pixels.length, w = pixels[0].length;
+    const c = document.createElement('canvas');
+    c.width = w * scale; c.height = h * scale;
+    const ctx = c.getContext('2d');
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const [r,g,b,a] = pixels[y][x];
+        if (a === 0) continue;
+        ctx.fillStyle = 'rgba('+r+','+g+','+b+','+(a/255)+')';
+        ctx.fillRect(x*scale, y*scale, scale, scale);
+      }
+    }
+    return c.toDataURL();
+  }
+
+  const arrow = [
+    [B,T,T,T,T,T,T,T,T,T,T],
+    [B,B,T,T,T,T,T,T,T,T,T],
+    [B,W,B,T,T,T,T,T,T,T,T],
+    [B,W,W,B,T,T,T,T,T,T,T],
+    [B,W,W,W,B,T,T,T,T,T,T],
+    [B,W,W,W,W,B,T,T,T,T,T],
+    [B,W,W,W,W,W,B,T,T,T,T],
+    [B,W,W,W,W,W,W,B,T,T,T],
+    [B,W,W,W,W,W,W,W,B,T,T],
+    [B,W,W,W,W,W,W,W,W,B,T],
+    [B,W,W,W,W,W,B,B,B,B,B],
+    [B,W,W,B,W,W,B,T,T,T,T],
+    [B,W,B,T,B,W,W,B,T,T,T],
+    [B,B,T,T,B,W,W,B,T,T,T],
+    [B,T,T,T,T,B,W,W,B,T,T],
+    [T,T,T,T,T,B,B,B,T,T,T],
+  ];
+
+  const pointer = [
+    [T,T,T,T,T,B,B,T,T,T,T,T],
+    [T,T,T,T,B,W,W,B,T,T,T,T],
+    [T,T,T,T,B,W,W,B,T,T,T,T],
+    [T,T,T,T,B,W,W,B,T,T,T,T],
+    [T,T,T,T,B,W,W,B,T,T,T,T],
+    [T,T,T,T,B,W,W,B,B,T,T,T],
+    [T,B,B,T,B,W,W,B,W,B,B,T],
+    [B,W,W,B,B,W,W,B,W,B,W,B],
+    [B,W,W,W,B,W,W,W,W,B,W,B],
+    [T,B,W,W,W,W,W,W,W,W,W,B],
+    [T,T,B,W,W,W,W,W,W,W,W,B],
+    [T,T,B,W,W,W,W,W,W,W,B,T],
+    [T,T,T,B,W,W,W,W,W,W,B,T],
+    [T,T,T,B,W,W,W,W,W,B,T,T],
+    [T,T,T,T,B,W,W,W,W,B,T,T],
+    [T,T,T,T,B,B,B,B,B,T,T,T],
+  ];
+
+  const grab = [
+    [T,T,T,B,B,T,T,T,T,T,T,T,T,T,T,T],
+    [T,T,B,W,W,B,B,B,T,T,T,T,T,T,T,T],
+    [T,T,B,W,W,B,W,W,B,T,T,T,T,T,T,T],
+    [T,T,T,B,W,B,W,W,B,B,B,T,T,T,T,T],
+    [T,T,T,B,W,W,W,W,B,W,W,B,T,T,T,T],
+    [T,B,B,T,B,W,W,W,B,W,W,B,B,T,T,T],
+    [T,B,W,B,B,W,W,W,W,W,W,B,W,B,T,T],
+    [T,B,W,W,B,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,B,W,W,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,T,B,W,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,T,B,W,W,W,W,W,W,W,W,B,T,T,T],
+    [T,T,T,T,B,W,W,W,W,W,W,W,B,T,T,T],
+    [T,T,T,T,B,W,W,W,W,W,W,B,T,T,T,T],
+    [T,T,T,T,T,B,W,W,W,W,W,B,T,T,T,T],
+    [T,T,T,T,T,B,B,B,B,B,B,T,T,T,T,T],
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+  ];
+
+  const grabbing = [
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+    [T,T,T,B,B,T,B,B,T,B,B,T,T,T,T,T],
+    [T,T,B,W,W,B,W,W,B,W,W,B,B,T,T,T],
+    [T,T,B,W,W,W,W,W,W,W,W,B,W,B,T,T],
+    [T,T,T,B,W,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,T,B,W,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,T,T,B,W,W,W,W,W,W,W,W,B,T,T],
+    [T,T,T,T,B,W,W,W,W,W,W,W,B,T,T,T],
+    [T,T,T,T,T,B,W,W,W,W,W,W,B,T,T,T],
+    [T,T,T,T,T,B,W,W,W,W,W,B,T,T,T,T],
+    [T,T,T,T,T,T,B,W,W,W,W,B,T,T,T,T],
+    [T,T,T,T,T,T,B,B,B,B,B,T,T,T,T,T],
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+    [T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T],
+  ];
+
+  const s = 1.5;
+  window.__cursors = {
+    default:  drawCursor(arrow, s),
+    pointer:  drawCursor(pointer, s),
+    grab:     drawCursor(grab, s),
+    grabbing: drawCursor(grabbing, s),
+  };
+
+  const style = document.createElement('style');
+  style.textContent =
+    "body, body * { cursor: url(" + window.__cursors.default + ") 0 0, default; }\n" +
+    "a, a *, button, button *, [role=button], [role=button] *, input[type=submit], .clickable, .close-box, .grow-box, .menu-action, .menu-parent, .desktop-icon, .toggle, .cp-swatch, .cp-pattern, .resize-handle " +
+    "{ cursor: url(" + window.__cursors.pointer + ") 8 0, pointer !important; }\n" +
+    ".title-bar { cursor: url(" + window.__cursors.grab + ") 12 12, grab !important; }\n" +
+    ".title-bar .close-box, .title-bar .grow-box { cursor: url(" + window.__cursors.pointer + ") 8 0, pointer !important; }";
+  document.head.appendChild(style);
+})();
+
+// ═══ MOBILE HELPERS ═══
+function isMobile() { return window.innerWidth <= 768; }
+function getEventPos(e) { return e.touches ? { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } : e; }
+
+// ═══ STATE ═══
+let darkMode = false;
+let currentFontSize = 12.5;
+let currentAccent = '#5a6fa0';
+let currentPattern = 'checker';
+let soundOn = true;
+
+// ═══ PIXEL ART ICONS — inspired by Susan Kare's 1984 Macintosh icons ═══
+// 16x16 grid for more detail, Kare-style: clear silhouettes, personality, whimsy
+const ICONS = {
+  // Kare-style portrait: round head, shoulders, slight smile
+  person: [
+    '................',
+    '.....111111.....',
+    '....11111111....',
+    '...1100110011...',
+    '...1100110011...',
+    '...1111111111...',
+    '....11011011....',
+    '....11100111....',
+    '.....111111.....',
+    '......1111......',
+    '...1111111111...',
+    '..111111111111..',
+    '.11111111111111.',
+    '.11111111111111.',
+    '..111111111111..',
+    '................',
+  ],
+  // Kare-style folder: tab on top, front face, depth
+  folder: [
+    '................',
+    '..111111........',
+    '.10000001.......',
+    '.1000000111111..',
+    '.10000000000001.',
+    '.10000000000001.',
+    '.10000000000001.',
+    '.100000000000001',
+    '.100000000000001',
+    '.100000000000001',
+    '.100000000000001',
+    '.100000000000001',
+    '.111111111111111',
+    '..1111111111111.',
+    '................',
+    '................',
+  ],
+  // Kare-style document: dog-ear corner, text lines
+  document: [
+    '................',
+    '..1111111110....',
+    '..1000000011....',
+    '..1000000001....',
+    '..1000000001....',
+    '..1001111001....',
+    '..1000000001....',
+    '..1001110001....',
+    '..1000000001....',
+    '..1001111101....',
+    '..1000000001....',
+    '..1001110001....',
+    '..1000000001....',
+    '..1111111111....',
+    '................',
+    '................',
+  ],
+  // Diagonal chain — two interlocked oval links at 45°
+  globe: [
+    '................',
+    '..........111...',
+    '.........1..01..',
+    '........1...01..',
+    '.......1...01...',
+    '......1...01....',
+    '.....1...01.....',
+    '....1..011.1....',
+    '....1.110..1....',
+    '.....10...1.....',
+    '....10...1......',
+    '...10...1.......',
+    '..10...1........',
+    '..10..1.........',
+    '...111..........',
+    '................',
+  ],
+  // Kare-style trash can: lid, vertical slats
+  trash: [
+    '................',
+    '....11111111....',
+    '...1111111111...',
+    '....11111111....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....10100101....',
+    '....11111111....',
+    '................',
+    '................',
+  ],
+  // Kare-style control panel: sliders/dials
+  control: [
+    '................',
+    '.11111111111111.',
+    '.10000000000001.',
+    '.10011100011001.',
+    '.10010100010001.',
+    '.10011100011001.',
+    '.10000000000001.',
+    '.10000000000001.',
+    '.10110011011001.',
+    '.10010010010001.',
+    '.10010011010001.',
+    '.10000000000001.',
+    '.11111111111111.',
+    '....11111111....',
+    '................',
+    '................',
+  ],
+  // Kare-style star / sparkle — for links
+  star: [
+    '................',
+    '.......11.......',
+    '.......11.......',
+    '......1111......',
+    '..111111111111..',
+    '...1111111111...',
+    '....11111111....',
+    '...1111111111...',
+    '..111111111111..',
+    '.11111..111111..',
+    '.1111....11111..',
+    '..11......11....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  // Kare-style hand pointer
+  hand: [
+    '......11........',
+    '......1011......',
+    '......1011......',
+    '......1011......',
+    '..11..1011......',
+    '..101110111011..',
+    '..10111011101.1.',
+    '..101101110101..',
+    '...10110110101..',
+    '...1011011011...',
+    '....101101011...',
+    '....1011010....',
+    '.....101101.....',
+    '.....10110......',
+    '......111.......',
+    '................',
+  ],
+};
+
+function drawIcon(canvas, iconData, fg, bg) {
+  fg = fg || getComputedStyle(document.body).getPropertyValue('--text').trim();
+  bg = bg || getComputedStyle(document.body).getPropertyValue('--white').trim();
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const rows = iconData.length, cols = iconData[0].length;
+  const px = w/cols, py = h/rows;
+  for (let r=0;r<rows;r++)
+    for (let c=0;c<cols;c++) {
+      if (iconData[r][c]==='1') { ctx.fillStyle=fg; ctx.fillRect(Math.floor(c*px),Math.floor(r*py),Math.ceil(px),Math.ceil(py)); }
+      else if (iconData[r][c]==='0') { ctx.fillStyle=bg; ctx.fillRect(Math.floor(c*px),Math.floor(r*py),Math.ceil(px),Math.ceil(py)); }
+    }
+}
+
+function drawSmallIcon(canvas, iconData, fg) {
+  fg = fg || getComputedStyle(document.body).getPropertyValue('--text').trim();
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const rows = iconData.length, cols = iconData[0].length;
+  const px = canvas.width/cols, py = canvas.height/rows;
+  for (let r=0;r<rows;r++)
+    for (let c=0;c<cols;c++)
+      if (iconData[r][c]==='1') { ctx.fillStyle=fg; ctx.fillRect(Math.floor(c*px),Math.floor(r*py),Math.ceil(px),Math.ceil(py)); }
+}
+
+// ═══ DESKTOP BG PATTERNS ═══
+function drawDesktopBg() {
+  const canvas = document.getElementById('desktop-bg');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const bg = getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  const pat = getComputedStyle(document.body).getPropertyValue('--bg-pattern').trim();
+
+  if (currentPattern === 'checker') {
+    for (let y=0;y<canvas.height;y+=2)
+      for (let x=0;x<canvas.width;x+=2) {
+        ctx.fillStyle=((x/2+y/2)%2===0)?bg:pat;
+        ctx.fillRect(x,y,2,2);
+      }
+  } else if (currentPattern === 'lines') {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = pat;
+    for (let y=0;y<canvas.height;y+=4) {
+      ctx.fillRect(0,y,canvas.width,1);
+    }
+  } else if (currentPattern === 'dots') {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = pat;
+    for (let y=0;y<canvas.height;y+=6)
+      for (let x=0;x<canvas.width;x+=6) {
+        ctx.fillRect(x,y,2,2);
+      }
+  } else {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+// ═══ HAPPY MAC — chunky pixel grid, Kare's original style ═══
+function drawHappyMac() {
+  const c = document.getElementById('happy-mac');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+
+  // 12x14 grid on 72px canvas = 6px per pixel block (chunky!)
+  const px = 6;
+  const mac = [
+    '............',
+    '..11111111..',
+    '.1111111111.',
+    '.1100000011.',
+    '.1000000001.',
+    '.1011001101.',
+    '.1000000001.',
+    '.1000110001.',
+    '.1010000101.',
+    '.1001111001.',
+    '.1100000011.',
+    '.1111111111.',
+    '..11111111..',
+    '............',
+  ];
+
+  const fg = '#252218';
+  const bg = '#f3f1ec';
+
+  for (let r = 0; r < mac.length; r++)
+    for (let col = 0; col < mac[r].length; col++) {
+      if (mac[r][col] === '1') { ctx.fillStyle = fg; ctx.fillRect(col*px, r*px, px, px); }
+      else if (mac[r][col] === '0') { ctx.fillStyle = bg; ctx.fillRect(col*px, r*px, px, px); }
+    }
+}
+
+// ═══ DESKTOP ICONS ═══
+const desktopIcons = [
+  { id:'about', label:'About Me', icon:'person' },
+  { id:'projects', label:'Projects', icon:'folder' },
+  { id:'resume', label:'Resume', icon:'document' },
+  { id:'links', label:'Links', icon:'globe' },
+  { id:'control-panel', label:'Control\nPanel', icon:'control' },
+  { id:'trash', label:'Trash', icon:'trash' },
+];
+
+function createDesktopIcons() {
+  const container = document.getElementById('desktop-icons');
+  container.innerHTML = '';
+  desktopIcons.forEach(ic => {
+    const div = document.createElement('div');
+    div.className = 'desktop-icon';
+    div.ondblclick = () => { if (ic.id!=='trash') openWindow(ic.id); };
+    div.onclick = () => {
+      document.querySelectorAll('.desktop-icon').forEach(d=>d.classList.remove('selected'));
+      div.classList.add('selected');
+      if (isMobile() && ic.id !== 'trash') openWindow(ic.id);
+    };
+    const cvs = document.createElement('canvas');
+    cvs.width=32; cvs.height=32;
+    div.appendChild(cvs);
+    const lbl = document.createElement('div');
+    lbl.className='icon-label'; lbl.textContent=ic.label;
+    div.appendChild(lbl);
+    container.appendChild(div);
+    drawIcon(cvs, ICONS[ic.icon]);
+  });
+}
+
+// ═══ WINDOW DEFS ═══
+const windowDefs = {
+  about: {
+    title:'About Me', width:460, height:360, x:50, y:30,
+    content: `
+      <h3>Hey, I'm Ashley</h3>
+      <p>I'm a software developer based in San Francisco. I build things and care deeply about making software that feels thoughtful and alive.</p>
+      <p>This portfolio is styled after Apple's System 7, with icons inspired by Susan Kare's original 1984 Macintosh pixel art — mosaics, needlepoint, and a thousand tiny dots turned on and off.</p>
+      <h3>What I Do</h3>
+      <p>Full-stack development and the occasional deep dive into systems programming. I care about clean code, delightful interfaces, and shipping things that matter.</p>
+      <h3>Quick Facts</h3>
+      <ul>
+        <li>This entire site is a single HTML file</li>
+      </ul>`
+  },
+  projects: {
+    title:'Projects', width:480, height:420, x:100, y:50,
+    content: `
+      <h3>Selected Work</h3>
+      <div class="project-card">
+        <h4>Project Alpha</h4>
+        <p>A real-time collaboration tool built with WebSockets and React. Live cursors, shared editing, and persistent rooms.</p>
+        <div class="tags">React · Node.js · WebSocket · Redis</div>
+      </div>
+      <div class="project-card">
+        <h4>Project Beta</h4>
+        <p>CLI tool for managing cloud infrastructure with a git-like workflow. Declarative configs and rollback support.</p>
+        <div class="tags">Go · AWS · Terraform · CLI</div>
+      </div>
+      <div class="project-card">
+        <h4>Project Gamma</h4>
+        <p>Mobile-first design system and component library. Shipped across 3 products with 40+ components.</p>
+        <div class="tags">TypeScript · Storybook · Figma · CSS</div>
+      </div>
+      <div class="project-card">
+        <h4>Project Delta</h4>
+        <p>Data pipeline for processing and visualizing IoT sensor data. Real-time dashboards with historical analysis.</p>
+        <div class="tags">Python · Kafka · PostgreSQL · D3.js</div>
+      </div>`
+  },
+  resume: {
+    title:'Resume', width:440, height:400, x:150, y:70,
+    content: `
+      <div class="resume-section">
+        <h4>Experience</h4>
+        <div class="resume-entry">
+          <div class="role">Senior Developer — Company A</div>
+          <div class="date">2023 – Present</div>
+          <p>Led development of customer-facing platform. Reduced load times by 60%. Mentored junior developers.</p>
+        </div>
+        <div class="resume-entry">
+          <div class="role">Full Stack Developer — Company B</div>
+          <div class="date">2021 – 2023</div>
+          <p>Built internal tools and APIs. Migrated legacy monolith to microservices architecture.</p>
+        </div>
+        <div class="resume-entry">
+          <div class="role">Junior Developer — Company C</div>
+          <div class="date">2019 – 2021</div>
+          <p>Shipped features across web and mobile. First production Kubernetes deployment.</p>
+        </div>
+      </div>
+      <div class="resume-section">
+        <h4>Education</h4>
+        <div class="resume-entry">
+          <div class="role">B.Sc. Computer Science</div>
+          <div class="date">University of California, Berkeley — Dec 2024</div>
+        </div>
+      </div>
+      <div class="resume-section">
+        <h4>Skills</h4>
+        <p>TypeScript, TypeScript, Python, Go, PostgreSQL, AWS, Docker, Kubernetes, Git</p>
+      </div>`
+  },
+  links: {
+    title:'Links', width:300, height:280, x:200, y:90,
+    content: `
+      <h3>Find Me Online</h3>
+      <div class="links-grid" id="links-grid"></div>`
+  },
+  'about-mac': {
+    title:'About This Mac', width:320, height:320, x:180, y:60,
+    content: `
+      <div class="about-mac">
+        <canvas id="about-mac-icon" width="48" height="48"></canvas>
+        <h3>Ashley's Macintosh</h3>
+        <p class="version">System 7.5.1</p>
+        <p>Built with HTML, CSS &amp; vanilla JS</p>
+        <p>No frameworks were harmed.</p>
+        <hr>
+        <p style="font-size:11px; color:var(--text-light); font-style:italic">"Bitmap graphics are like mosaics and needlepoint and other pseudo-digital art forms."</p>
+        <p style="font-size:11px; color:var(--text-light)">— Susan Kare, Macintosh Artist</p>
+        <hr>
+        <p>© 2026 Ashley · San Francisco, CA</p>
+        <p style="margin-top:8px; font-size:11px; color:var(--text-light)">Total Memory: ∞ &nbsp;·&nbsp; Disk: 1 HTML file</p>
+      </div>`
+  },
+  'control-panel': {
+    title:'Control Panel', width:360, height:400, x:130, y:45,
+    content: 'CONTROL_PANEL_PLACEHOLDER'
+  }
+};
+
+// ═══ CONTROL PANEL BUILDER ═══
+function buildControlPanelContent() {
+  return `
+    <h3>Control Panel</h3>
+
+    <div class="cp-row">
+      <div>
+        <div class="cp-label">Appearance</div>
+        <div class="cp-sublabel">Switch between light and dark</div>
+      </div>
+      <div class="toggle ${darkMode?'on':''}" onclick="toggleDarkMode();this.classList.toggle('on');">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+
+    <div class="cp-row">
+      <div>
+        <div class="cp-label">Font Size</div>
+        <div class="cp-sublabel">Adjust reading size</div>
+      </div>
+      <div class="cp-slider-row">
+        <span class="cp-slider-label" style="font-size:11px">A</span>
+        <input type="range" class="cp-slider" min="11" max="16" step="0.5"
+          value="${currentFontSize}" oninput="setFontSize(this.value)">
+        <span class="cp-slider-label" style="font-size:17px">A</span>
+      </div>
+    </div>
+
+    <div class="cp-row">
+      <div>
+        <div class="cp-label">Accent Color</div>
+        <div class="cp-sublabel">Title bars, links &amp; highlights</div>
+      </div>
+      <div class="cp-swatches">
+        <div class="cp-swatch ${currentAccent==='#5a6fa0'?'active':''}" style="background:#5a6fa0" onclick="setAccent('#5a6fa0','#4a5d8a',this)"></div>
+        <div class="cp-swatch ${currentAccent==='#6a9068'?'active':''}" style="background:#6a9068" onclick="setAccent('#6a9068','#5a7d58',this)"></div>
+        <div class="cp-swatch ${currentAccent==='#c4a832'?'active':''}" style="background:#c4a832" onclick="setAccent('#c4a832','#a89028',this)"></div>
+        <div class="cp-swatch ${currentAccent==='#c47832'?'active':''}" style="background:#c47832" onclick="setAccent('#c47832','#a86428',this)"></div>
+        <div class="cp-swatch ${currentAccent==='#b5566e'?'active':''}" style="background:#b5566e" onclick="setAccent('#b5566e','#9a4860',this)"></div>
+      </div>
+    </div>
+
+    <div class="cp-row">
+      <div>
+        <div class="cp-label">Desktop Pattern</div>
+        <div class="cp-sublabel">Background texture</div>
+      </div>
+      <div class="cp-patterns">
+        <canvas class="cp-pattern ${currentPattern==='checker'?'active':''}" width="32" height="24"
+          onclick="setPattern('checker',this)" data-pat="checker"></canvas>
+        <canvas class="cp-pattern ${currentPattern==='lines'?'active':''}" width="32" height="24"
+          onclick="setPattern('lines',this)" data-pat="lines"></canvas>
+        <canvas class="cp-pattern ${currentPattern==='dots'?'active':''}" width="32" height="24"
+          onclick="setPattern('dots',this)" data-pat="dots"></canvas>
+        <canvas class="cp-pattern ${currentPattern==='solid'?'active':''}" width="32" height="24"
+          onclick="setPattern('solid',this)" data-pat="solid"></canvas>
+      </div>
+    </div>
+
+    <div class="cp-row">
+      <div>
+        <div class="cp-label">System Sounds</div>
+        <div class="cp-sublabel">Click feedback</div>
+      </div>
+      <div class="toggle ${soundOn?'on':''}" onclick="soundOn=!soundOn;this.classList.toggle('on');">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+  `;
+}
+
+function drawPatternPreviews() {
+  document.querySelectorAll('.cp-pattern').forEach(cvs => {
+    const ctx = cvs.getContext('2d');
+    const w=cvs.width, h=cvs.height;
+    const p = cvs.dataset.pat;
+    const bg = darkMode ? '#1c1b18' : '#e3e0da';
+    const pat = darkMode ? '#252420' : '#d7d4ce';
+
+    if (p==='checker') {
+      for (let y=0;y<h;y+=2)
+        for (let x=0;x<w;x+=2) {
+          ctx.fillStyle=((x/2+y/2)%2===0)?bg:pat;
+          ctx.fillRect(x,y,2,2);
+        }
+    } else if (p==='lines') {
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle=pat;
+      for (let y=0;y<h;y+=4) ctx.fillRect(0,y,w,1);
+    } else if (p==='dots') {
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle=pat;
+      for (let y=0;y<h;y+=6)
+        for (let x=0;x<w;x+=6) ctx.fillRect(x,y,2,2);
+    } else {
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+    }
+  });
+}
+
+// ═══ CONTROL PANEL ACTIONS ═══
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  document.body.classList.toggle('dark-mode', darkMode);
+  document.getElementById('dm-label').textContent = darkMode ? '✓ Dark Mode' : 'Dark Mode';
+
+  // Force-clear any inline overrides on all themed elements
+  document.querySelectorAll('.window, .window-content, .project-card, .link-row, .resume-section h4, .title-bar, .title-bar-stripes, .title-text, .close-box, .grow-box, #menu-bar, .menu-dropdown').forEach(el => {
+    el.style.removeProperty('background');
+    el.style.removeProperty('color');
+    el.style.removeProperty('border-color');
+  });
+
+  // Force the browser to recalculate gradients on title bar stripes
+  document.querySelectorAll('.title-bar-stripes').forEach(el => {
+    const parent = el.parentNode;
+    const clone = el.cloneNode(true);
+    parent.replaceChild(clone, el);
+  });
+
+  // Wait for CSS vars to take effect, then redraw all canvas elements
+  setTimeout(() => {
+    drawDesktopBg();
+    createDesktopIcons();
+
+    // Redraw icons inside open windows
+    if (openWindows['links']) drawLinkIcons();
+    if (openWindows['control-panel']) {
+      openWindows['control-panel'].querySelector('.window-content').innerHTML = buildControlPanelContent();
+      setTimeout(drawPatternPreviews, 10);
+    }
+    if (openWindows['about-mac']) {
+      const ic = document.getElementById('about-mac-icon');
+      if (ic) drawHappyMacSmall(ic);
+    }
+  }, 50);
+}
+
+function applyFontSize() {
+  document.body.style.setProperty('--font-size', currentFontSize + 'px');
+  const scale = currentFontSize / 12.5;
+  document.querySelectorAll('.window-content').forEach(el => {
+    el.style.zoom = scale;
+  });
+}
+
+function changeFontSize(delta) {
+  currentFontSize = Math.min(16, Math.max(11, currentFontSize + delta));
+  applyFontSize();
+}
+
+function setFontSize(val) {
+  currentFontSize = parseFloat(val);
+  applyFontSize();
+}
+
+function resetFontSize() {
+  currentFontSize = 12.5;
+  applyFontSize();
+}
+
+function setAccent(color, hover, el) {
+  currentAccent = color;
+  document.body.style.setProperty('--accent', color);
+  document.body.style.setProperty('--accent-hover', hover);
+  document.querySelectorAll('.cp-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  drawDesktopBg();
+  // Force repaint title bar stripes to pick up new accent
+  document.querySelectorAll('.title-bar-stripes').forEach(el => {
+    const parent = el.parentNode;
+    parent.replaceChild(el.cloneNode(true), el);
+  });
+}
+
+function setPattern(pat, el) {
+  currentPattern = pat;
+  drawDesktopBg();
+  document.querySelectorAll('.cp-pattern').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function copyEmail() {
+  navigator.clipboard.writeText('ashley@example.com').then(() => {
+    playClick();
+  });
+  closeAllMenus();
+}
+
+function closeAllWindows() {
+  Object.keys(openWindows).forEach(id => closeWindow(id));
+  closeAllMenus();
+}
+
+function cascadeWindows() {
+  let i = 0;
+  Object.values(openWindows).forEach(win => {
+    win.style.left = (40 + i * 30) + 'px';
+    win.style.top = (20 + i * 30) + 'px';
+    win.dataset.max = '0';
+    i++;
+  });
+  closeAllMenus();
+}
+
+function playClick() {
+  if (!soundOn) return;
+  try {
+    const ac = new AudioContext();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.frequency.value = 800;
+    gain.gain.value = 0.08;
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05);
+    osc.start(); osc.stop(ac.currentTime + 0.05);
+  } catch(e) {}
+}
+
+function redrawAllIcons() {
+  // Redraw desktop icons and link icons with new colors
+  createDesktopIcons();
+  if (openWindows['links']) {
+    setTimeout(drawLinkIcons, 10);
+  }
+}
+
+// ═══ MENU SYSTEM ═══
+function closeAllMenus() {
+  document.querySelectorAll('.menu-parent').forEach(m => m.classList.remove('open'));
+}
+
+document.querySelectorAll('.menu-parent').forEach(parent => {
+  parent.addEventListener('mouseenter', () => {
+    const anyOpen = document.querySelector('.menu-parent.open');
+    if (anyOpen) {
+      closeAllMenus();
+      parent.classList.add('open');
+    }
+  });
+  parent.addEventListener('click', (e) => {
+    if (e.target.classList.contains('menu-action') || e.target.closest('.menu-action')) return;
+    const wasOpen = parent.classList.contains('open');
+    closeAllMenus();
+    if (!wasOpen) parent.classList.add('open');
+  });
+});
+
+document.querySelectorAll('.menu-action:not(.disabled)').forEach(action => {
+  action.addEventListener('click', () => {
+    playClick();
+    setTimeout(closeAllMenus, 80);
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.menu-parent') && !e.target.closest('.apple-logo')) {
+    closeAllMenus();
+  }
+});
+
+// ═══ WINDOW MANAGEMENT ═══
+let windowZIndex = 100;
+const openWindows = {};
+
+function openWindow(id) {
+  closeAllMenus();
+  if (openWindows[id]) { focusWindow(openWindows[id]); return; }
+  const def = windowDefs[id]; if (!def) return;
+  playClick();
+
+  const win = document.createElement('div');
+  win.className = 'window focused';
+  win.setAttribute('data-id', id);
+  Object.assign(win.style, {
+    width:def.width+'px', height:def.height+'px',
+    left:def.x+'px', top:def.y+'px', zIndex:++windowZIndex
+  });
+
+  const content = id === 'control-panel' ? buildControlPanelContent() : def.content;
+
+  win.innerHTML = `
+    <div class="title-bar">
+      <div class="title-bar-stripes"></div>
+      <div class="grow-box" onclick="toggleMax('${id}')"></div>
+      <div class="title-text">${def.title}</div>
+      <div class="close-box" onclick="closeWindow('${id}')"></div>
+    </div>
+    <div class="window-content">${content}</div>
+    <div class="resize-handle"></div>
+  `;
+
+  win.onmousedown = () => focusWindow(win);
+  if (isMobile()) {
+    win.style.left = ''; win.style.top = '';
+    win.style.width = ''; win.style.height = '';
+  }
+  document.getElementById('desktop').appendChild(win);
+  openWindows[id] = win;
+  makeDraggable(win); makeResizable(win); focusWindow(win);
+  if (isMobile()) {
+    win.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (id==='links') setTimeout(drawLinkIcons, 10);
+  if (id==='control-panel') setTimeout(drawPatternPreviews, 10);
+  if (id==='about-mac') {
+    setTimeout(() => {
+      const ic = document.getElementById('about-mac-icon');
+      if (ic) drawHappyMacSmall(ic);
+    }, 10);
+  }
+}
+
+function drawHappyMacSmall(c) {
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const fg = getComputedStyle(document.body).getPropertyValue('--text').trim();
+  const bg = getComputedStyle(document.body).getPropertyValue('--white').trim();
+  const mac = [
+    '............',
+    '..1111111...',
+    '.11111111111',
+    '.1100000011.',
+    '.1001001001.',
+    '.1000000001.',
+    '.1000110001.',
+    '.1001000101.',
+    '.1000111001.',
+    '.1100000011.',
+    '.11111111111',
+    '..11111111..',
+  ];
+  const p = c.width / 12;
+  for (let r=0;r<mac.length;r++)
+    for (let c2=0;c2<mac[r].length;c2++) {
+      if (mac[r][c2]==='1') { ctx.fillStyle=fg; ctx.fillRect(Math.floor(c2*p),Math.floor(r*p),Math.ceil(p),Math.ceil(p)); }
+      else if (mac[r][c2]==='0') { ctx.fillStyle=bg; ctx.fillRect(Math.floor(c2*p),Math.floor(r*p),Math.ceil(p),Math.ceil(p)); }
+    }
+}
+
+function closeWindow(id) {
+  playClick();
+  if (openWindows[id]) { openWindows[id].remove(); delete openWindows[id]; }
+}
+
+function focusWindow(win) {
+  document.querySelectorAll('.window').forEach(w=>w.classList.remove('focused'));
+  win.classList.add('focused'); win.style.zIndex=++windowZIndex;
+}
+
+function toggleMax(id) {
+  const w=openWindows[id]; if(!w) return;
+  if (w.dataset.max==='1') {
+    Object.assign(w.style,{left:w.dataset.pl,top:w.dataset.pt,width:w.dataset.pw,height:w.dataset.ph});
+    w.dataset.max='0';
+  } else {
+    w.dataset.pl=w.style.left; w.dataset.pt=w.style.top;
+    w.dataset.pw=w.style.width; w.dataset.ph=w.style.height;
+    Object.assign(w.style,{left:'0',top:'0',width:'100%',height:'100%'});
+    w.dataset.max='1';
+  }
+}
+
+function makeDraggable(win) {
+  const bar=win.querySelector('.title-bar');
+  let drag=false,sx,sy,ox,oy;
+  bar.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('close-box')||e.target.classList.contains('grow-box'))return;
+    drag=true; sx=e.clientX; sy=e.clientY;
+    ox=win.offsetLeft; oy=win.offsetTop;
+    document.body.style.cursor = "url(" + window.__cursors.grabbing + ") 12 12, grabbing";
+    document.body.classList.add('dragging');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!drag)return;
+    win.style.left=(ox+e.clientX-sx)+'px';
+    win.style.top=(oy+e.clientY-sy)+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!drag)return;
+    drag=false;
+    document.body.style.removeProperty('cursor');
+    document.body.classList.remove('dragging');
+  });
+  // Touch support
+  bar.addEventListener('touchstart',e=>{
+    if(isMobile()) return;
+    if(e.target.classList.contains('close-box')||e.target.classList.contains('grow-box'))return;
+    const pos=getEventPos(e);
+    drag=true; sx=pos.clientX; sy=pos.clientY;
+    ox=win.offsetLeft; oy=win.offsetTop;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    e.preventDefault();
+    const pos=getEventPos(e);
+    win.style.left=(ox+pos.clientX-sx)+'px';
+    win.style.top=(oy+pos.clientY-sy)+'px';
+  },{passive:false});
+  document.addEventListener('touchend',()=>{
+    if(!drag)return;
+    drag=false;
+  });
+}
+
+function makeResizable(win) {
+  const h=win.querySelector('.resize-handle');
+  let rsz=false,sx,sy,ow,oh;
+  h.addEventListener('mousedown',e=>{
+    rsz=true;sx=e.clientX;sy=e.clientY;
+    ow=win.offsetWidth;oh=win.offsetHeight;
+    document.body.style.cursor = "url(" + window.__cursors.grabbing + ") 12 12, grabbing";
+    document.body.classList.add('dragging');
+    e.preventDefault();e.stopPropagation();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!rsz)return;
+    win.style.width=Math.max(260,ow+e.clientX-sx)+'px';
+    win.style.height=Math.max(140,oh+e.clientY-sy)+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!rsz)return;
+    rsz=false;
+    document.body.style.removeProperty('cursor');
+    document.body.classList.remove('dragging');
+  });
+  // Touch support
+  h.addEventListener('touchstart',e=>{
+    if(isMobile()) return;
+    const pos=getEventPos(e);
+    rsz=true;sx=pos.clientX;sy=pos.clientY;
+    ow=win.offsetWidth;oh=win.offsetHeight;
+    e.stopPropagation();
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!rsz)return;
+    e.preventDefault();
+    const pos=getEventPos(e);
+    win.style.width=Math.max(260,ow+pos.clientX-sx)+'px';
+    win.style.height=Math.max(140,oh+pos.clientY-sy)+'px';
+  },{passive:false});
+  document.addEventListener('touchend',()=>{
+    if(!rsz)return;
+    rsz=false;
+  });
+}
+
+// ═══ LINK ICONS ═══
+function drawLinkIcons() {
+  const grid=document.getElementById('links-grid'); if(!grid)return;
+  const links=[
+    {label:'GitHub',url:'#',icon:'star'},
+    {label:'LinkedIn',url:'#',icon:'hand'},
+    {label:'Twitter / X',url:'#',icon:'star'},
+    {label:'Email',url:'mailto:ashley@example.com',icon:'document'},
+  ];
+  grid.innerHTML='';
+  links.forEach(link=>{
+    const a=document.createElement('a');
+    a.className='link-row'; a.href=link.url;
+    a.target='_blank'; a.rel='noopener';
+    const cvs=document.createElement('canvas');
+    cvs.width=16;cvs.height=16;
+    a.appendChild(cvs);
+    const span=document.createElement('span');
+    span.textContent=link.label;
+    a.appendChild(span);
+    grid.appendChild(a);
+    drawSmallIcon(cvs,ICONS[link.icon]);
+  });
+}
+
+// ═══ CLOCK ═══
+function updateClock() {
+  const now=new Date();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const h=now.getHours(),m=now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('menu-clock').textContent=
+    `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()}, ${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+}
+
+// ═══ TERMINAL BOOT SEQUENCE ═══
+const bootLines = [
+  { text: 'Macintosh Quadra 840AV', cls: 'bright', delay: 0 },
+  { text: 'ROM v3.2.1 — © 1991-93 Apple Computer, Inc.', cls: 'dim', delay: 80 },
+  { text: '', delay: 300 },
+  { text: 'Power-On Self Test...', cls: '', delay: 350 },
+  { text: '  CPU: Motorola 68040 @ 40MHz', cls: 'white', delay: 60 },
+  { text: '  RAM: 8192K ..... OK', cls: 'white', delay: 120 },
+  { text: '  FPU: Present', cls: 'white', delay: 50 },
+  { text: '  SCSI Bus: 2 device(s) found', cls: 'white', delay: 100 },
+  { text: '  NuBus: Slot $9 — Video Card', cls: 'white', delay: 70 },
+  { text: '', delay: 200 },
+  { text: 'Loading System 7.5.1...', cls: '', delay: 400 },
+  { text: '  INIT: Display Manager', cls: 'dim', delay: 80 },
+  { text: '  INIT: Disk First Aid', cls: 'dim', delay: 60 },
+  { text: '  INIT: Sound Manager', cls: 'dim', delay: 70 },
+  { text: '  INIT: AppleTalk', cls: 'dim', delay: 90 },
+  { text: '  INIT: Finder 7.5.1', cls: 'dim', delay: 60 },
+  { text: '', delay: 200 },
+  { text: 'Mounting Macintosh HD...', cls: '', delay: 300 },
+  { text: '  Volume: Ashley\'s Portfolio', cls: 'white', delay: 80 },
+  { text: '  Type: HFS  |  Free: 420 MB of 512 MB', cls: 'white', delay: 80 },
+  { text: '', delay: 250 },
+  { text: '  All systems nominal.', cls: 'accent', delay: 400 },
+  { text: '', delay: 100 },
+  { text: 'Starting Ashley\'s desktop...', cls: 'bright', delay: 500, typing: true },
+];
+
+async function typeLine(terminal, text, cls, typing) {
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  terminal.appendChild(span);
+
+  if (typing) {
+    for (let i = 0; i < text.length; i++) {
+      span.textContent += text[i];
+      await sleep(35 + Math.random() * 25);
+    }
+  } else {
+    span.textContent = text;
+  }
+  terminal.appendChild(document.createTextNode('\n'));
+}
+
+async function boot() {
+  const terminal = document.getElementById('boot-terminal');
+
+  // Add cursor
+  const cursor = document.createElement('span');
+  cursor.id = 'boot-cursor';
+  terminal.appendChild(cursor);
+
+  // Type out boot lines
+  for (const line of bootLines) {
+    if (line.delay) await sleep(line.delay);
+    cursor.remove();
+    await typeLine(terminal, line.text, line.cls, line.typing);
+    terminal.appendChild(cursor);
+    // Scroll to bottom
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  await sleep(600);
+  cursor.remove();
+
+  // Flash screen white briefly then show Happy Mac
+  const bootScreen = document.getElementById('boot-screen');
+  bootScreen.style.transition = 'background 0.1s';
+  bootScreen.style.background = '#f3f1ec';
+  await sleep(100);
+
+  const macPhase = document.getElementById('happy-mac-phase');
+  macPhase.style.display = 'flex';
+  drawHappyMac();
+
+  await sleep(1200);
+
+  // Transition to welcome dialog
+  bootScreen.style.transition = 'opacity 0.35s';
+  bootScreen.style.opacity = '0';
+  await sleep(350);
+  bootScreen.style.display = 'none';
+
+  const dlg=document.getElementById('welcome-dialog');
+  dlg.style.display='flex';
+  const bar=document.getElementById('loading-bar');
+  bar.innerHTML='';
+  for(let i=0;i<12;i++){const s=document.createElement('div');s.className='loading-segment';bar.appendChild(s);}
+  const segs=bar.querySelectorAll('.loading-segment');
+  for(let i=0;i<segs.length;i++){await sleep(100+Math.random()*80);segs[i].classList.add('filled');}
+  await sleep(350);
+  dlg.style.transition='opacity 0.35s'; dlg.style.opacity='0';
+  await sleep(350); dlg.style.display='none';
+
+  document.getElementById('menu-bar').style.display='flex';
+  document.getElementById('desktop').style.display='block';
+  drawDesktopBg(); createDesktopIcons();
+  updateClock(); setInterval(updateClock,30000);
+  await sleep(250); openWindow('about');
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+document.addEventListener('click',e=>{
+  if(e.target.id==='desktop-bg'||e.target.id==='desktop')
+    document.querySelectorAll('.desktop-icon').forEach(d=>d.classList.remove('selected'));
+});
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('desktop').style.display==='block') drawDesktopBg();
+});
+
+window.addEventListener('orientationchange', () => { setTimeout(drawDesktopBg, 100); });
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey) {
+    if (e.key === 'w' || e.key === 'W') { e.preventDefault(); closeAllWindows(); }
+    if (e.key === '=' || e.key === '+') { e.preventDefault(); changeFontSize(1); }
+    if (e.key === '-') { e.preventDefault(); changeFontSize(-1); }
+    if (e.key === '0') { e.preventDefault(); resetFontSize(); }
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
