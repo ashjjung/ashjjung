@@ -18,6 +18,9 @@
   --white-pure: #faf8f4;
   --shadow: rgba(37, 34, 24, 0.28);
   --title-bar-inactive: #b5b2aa;
+  --terminal-bg: #000;
+  --terminal-text: #fff;
+  --terminal-scrollbar: #666;
   --font-size: 12.5px;
 }
 
@@ -34,6 +37,9 @@ body.dark-mode {
   --white-pure: #262520;
   --shadow: rgba(0, 0, 0, 0.7);
   --title-bar-inactive: #3a3832;
+  --terminal-bg: #000;
+  --terminal-text: #fff;
+  --terminal-scrollbar: #666;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -178,6 +184,27 @@ body {
 }
 .menu-right { margin-left: auto; font-size: 15px; font-family: 'VT323', monospace; }
 
+/* ═══ TERMINAL APP ═══ */
+.window[data-id="terminal"] { border-width: 1px; }
+.window[data-id="terminal"] .window-content { padding: 0; }
+#term-wrap {
+  background: var(--terminal-bg); color: var(--terminal-text); font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; line-height: 1.55; padding: 12px 14px; height: 100%; display: flex;
+  flex-direction: column; position: relative; overflow: hidden;
+}
+#term-history { flex: 1; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+#term-history::-webkit-scrollbar { width: 8px; }
+#term-history::-webkit-scrollbar-track { background: var(--terminal-bg); }
+#term-history::-webkit-scrollbar-thumb { background: var(--terminal-scrollbar); }
+#term-input-line { display: flex; align-items: center; white-space: nowrap; }
+#term-input-line .prompt, .prompt-line { color: var(--terminal-text); font-weight: 600; }
+#term-input-line .prompt { margin-right: 7px; }
+#term-input {
+  background: transparent; border: none; outline: none; color: var(--terminal-text);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.55; flex: 1;
+  caret-color: var(--terminal-text);
+}
+
 /* ═══ DESKTOP ═══ */
 #desktop {
   position: fixed; top: 24px; left: 0; right: 0; bottom: 0;
@@ -193,6 +220,7 @@ body {
 .desktop-icon {
   display: flex; flex-direction: column; align-items: center;
   width: 74px; padding: 6px 4px; cursor: pointer;
+  user-select: none; -webkit-user-select: none;
 }
 .desktop-icon:hover .icon-label { text-decoration: underline; }
 .desktop-icon.selected canvas {
@@ -837,6 +865,25 @@ const ICONS = {
     '................',
     '................',
   ],
+  // Kare-style terminal: square with >_
+  terminal: [
+    '................',
+    '.11111111111111.',
+    '.10000000000001.',
+    '.10000000000001.',
+    '.10010000000001.',
+    '.10001000000001.',
+    '.10000100000001.',
+    '.10001000000001.',
+    '.10010000000001.',
+    '.10000000000001.',
+    '.10000011100001.',
+    '.10000000000001.',
+    '.10000000000001.',
+    '.11111111111111.',
+    '................',
+    '................',
+  ],
   // Kare-style star / sparkle — for links
   star: [
     '................',
@@ -980,6 +1027,7 @@ const desktopIcons = [
   { id:'projects', label:'Projects', icon:'folder' },
   { id:'resume', label:'Resume', icon:'document' },
   { id:'links', label:'Links', icon:'globe' },
+  { id:'terminal', label:'Terminal', icon:'terminal' },
   { id:'control-panel', label:'Control\nPanel', icon:'control' },
   { id:'trash', label:'Trash', icon:'trash' },
 ];
@@ -987,15 +1035,38 @@ const desktopIcons = [
 function createDesktopIcons() {
   const container = document.getElementById('desktop-icons');
   container.innerHTML = '';
+  let lastClickIcon = null;
+  let lastClickTime = 0;
   desktopIcons.forEach(ic => {
     const div = document.createElement('div');
     div.className = 'desktop-icon';
-    div.ondblclick = () => { if (ic.id!=='trash') openWindow(ic.id); };
-    div.onclick = () => {
+    const openIcon = () => {
+      if (ic.id !== 'trash') openWindow(ic.id);
+    };
+    div.addEventListener('click', e => {
       document.querySelectorAll('.desktop-icon').forEach(d=>d.classList.remove('selected'));
       div.classList.add('selected');
-      if (isMobile() && ic.id !== 'trash') openWindow(ic.id);
-    };
+      if (isMobile()) {
+        openIcon();
+        return;
+      }
+
+      const now = Date.now();
+      if (lastClickIcon === ic.id && now - lastClickTime < 700) {
+        e.preventDefault();
+        openIcon();
+        lastClickIcon = null;
+        lastClickTime = 0;
+        return;
+      }
+
+      lastClickIcon = ic.id;
+      lastClickTime = now;
+    });
+    div.addEventListener('dblclick', e => {
+      e.preventDefault();
+      openIcon();
+    });
     const cvs = document.createElement('canvas');
     cvs.width=32; cvs.height=32;
     div.appendChild(cvs);
@@ -1013,7 +1084,7 @@ const windowDefs = {
     title:'About Me', width:460, height:360, x:50, y:30,
     content: `
       <h3>Hey, I'm Ashley</h3>
-      <p>I'm a software developer based in San Francisco. I build things and care deeply about making software that feels thoughtful and alive.</p>
+      <p>I'm a software engineer based in San Francisco. I build things and care deeply about making software that feels thoughtful and alive.</p>
       <p>This portfolio is styled after Apple's System 7, with icons inspired by Susan Kare's original 1984 Macintosh pixel art — mosaics, needlepoint, and a thousand tiny dots turned on and off.</p>
       <h3>What I Do</h3>
       <p>Full-stack development and the occasional deep dive into systems programming. I care about clean code, delightful interfaces, and shipping things that matter.</p>
@@ -1023,49 +1094,40 @@ const windowDefs = {
       </ul>`
   },
   projects: {
-    title:'Projects', width:480, height:420, x:100, y:50,
+    title:'Projects', width:500, height:430, x:100, y:50,
     content: `
       <h3>Selected Work</h3>
       <div class="project-card">
-        <h4>Project Alpha</h4>
-        <p>A real-time collaboration tool built with WebSockets and React. Live cursors, shared editing, and persistent rooms.</p>
-        <div class="tags">React · Node.js · WebSocket · Redis</div>
+        <h4><a href="https://github.com/ashjjung/agent-handoff" target="_blank" rel="noopener">agent-handoff ↗</a></h4>
+        <p>Portable, verifiable debugging context for coding agents. Package an unfinished investigation once, share it as a single file, and let another developer continue it in Codex or Cursor without sharing accounts or shell access.</p>
+        <div class="tags">TypeScript · CLI · Agent Skills · HTTP · Git</div>
       </div>
       <div class="project-card">
-        <h4>Project Beta</h4>
-        <p>CLI tool for managing cloud infrastructure with a git-like workflow. Declarative configs and rollback support.</p>
-        <div class="tags">Go · AWS · Terraform · CLI</div>
+        <h4><a href="https://github.com/ashjjung/relayd" target="_blank" rel="noopener">relayd ↗</a></h4>
+        <p>A small webhook reliability daemon that persists events before acknowledging them, retries failed deliveries, dead-letters exhausted events, and supports replay after downtime or crashes.</p>
+        <div class="tags">Go · PostgreSQL · Webhooks · Docker</div>
       </div>
       <div class="project-card">
-        <h4>Project Gamma</h4>
-        <p>Mobile-first design system and component library. Shipped across 3 products with 40+ components.</p>
-        <div class="tags">TypeScript · Storybook · Figma · CSS</div>
-      </div>
-      <div class="project-card">
-        <h4>Project Delta</h4>
-        <p>Data pipeline for processing and visualizing IoT sensor data. Real-time dashboards with historical analysis.</p>
-        <div class="tags">Python · Kafka · PostgreSQL · D3.js</div>
+        <h4>Ashley's Macintosh</h4>
+        <p>A playful System 7-inspired portfolio with draggable windows, custom pixel art, configurable themes, and a working terminal—all in one HTML file.</p>
+        <div class="tags">HTML · CSS · Vanilla JavaScript · Canvas</div>
       </div>`
   },
   resume: {
-    title:'Resume', width:440, height:400, x:150, y:70,
+    title:'Resume', width:460, height:430, x:150, y:70,
     content: `
       <div class="resume-section">
         <h4>Experience</h4>
         <div class="resume-entry">
-          <div class="role">Senior Developer — Company A</div>
-          <div class="date">2023 – Present</div>
-          <p>Led development of customer-facing platform. Reduced load times by 60%. Mentored junior developers.</p>
+          <div class="role">Founding Software Engineer — Domu (YC S24)</div>
+          <div class="date">Nov 2025 – Present · San Francisco</div>
+          <ul>
+            <li>Build and operate production AI voice systems for financial services across backend services, telephony infrastructure, workflow orchestration, and customer integrations.</li>
+          </ul>
         </div>
         <div class="resume-entry">
-          <div class="role">Full Stack Developer — Company B</div>
-          <div class="date">2021 – 2023</div>
-          <p>Built internal tools and APIs. Migrated legacy monolith to microservices architecture.</p>
-        </div>
-        <div class="resume-entry">
-          <div class="role">Junior Developer — Company C</div>
-          <div class="date">2019 – 2021</div>
-          <p>Shipped features across web and mobile. First production Kubernetes deployment.</p>
+          <div class="role">Research Assistant — University of California, Berkeley</div>
+          <div class="date">Feb 2025 – Oct 2025</div>
         </div>
       </div>
       <div class="resume-section">
@@ -1077,7 +1139,7 @@ const windowDefs = {
       </div>
       <div class="resume-section">
         <h4>Skills</h4>
-        <p>TypeScript, TypeScript, Python, Go, PostgreSQL, AWS, Docker, Kubernetes, Git</p>
+        <p>TypeScript, JavaScript, Python, Go, SQL, PostgreSQL, AWS, Docker, Kubernetes, Git</p>
       </div>`
   },
   links: {
@@ -1106,7 +1168,11 @@ const windowDefs = {
   'control-panel': {
     title:'Control Panel', width:360, height:400, x:130, y:45,
     content: 'CONTROL_PANEL_PLACEHOLDER'
-  }
+  },
+  'terminal': {
+    title:'Terminal', width:520, height:360, x:120, y:80,
+    content: 'TERMINAL_PLACEHOLDER'
+  },
 };
 
 // ═══ CONTROL PANEL BUILDER ═══
@@ -1209,6 +1275,146 @@ function drawPatternPreviews() {
   });
 }
 
+// ═══ TERMINAL APP ═══
+function buildTerminalContent() {
+  return `
+    <div id="term-wrap">
+      <div id="term-history">Last login: ${new Date().toString()}\nType 'help' for available commands.\n\n</div>
+      <div id="term-input-line">
+        <span class="prompt">ashley@macintosh:~ $</span>
+        <input id="term-input" type="text" spellcheck="false" autocomplete="off" />
+      </div>
+    </div>`;
+}
+
+const termCmdHistory = [];
+let termHistoryIndex = -1;
+
+function initTerminal() {
+  const input = document.getElementById('term-input');
+  if (!input) return;
+  input.focus();
+  document.getElementById('term-wrap').onclick = () => input.focus();
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = input.value.trim();
+      if (cmd) termCmdHistory.unshift(cmd);
+      termHistoryIndex = -1;
+      termAppendLine('ashley@macintosh:~ $ ' + cmd, 'prompt-line');
+      const output = termRunCommand(cmd);
+      if (output) termAppendLine(output);
+      input.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (termHistoryIndex < termCmdHistory.length - 1) {
+        termHistoryIndex++;
+        input.value = termCmdHistory[termHistoryIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (termHistoryIndex > 0) {
+        termHistoryIndex--;
+        input.value = termCmdHistory[termHistoryIndex];
+      } else {
+        termHistoryIndex = -1;
+        input.value = '';
+      }
+    }
+  });
+}
+
+function termAppendLine(text, cls) {
+  const history = document.getElementById('term-history');
+  const div = document.createElement('div');
+  if (cls) div.className = cls;
+  div.textContent = text;
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
+}
+
+function termRunCommand(input) {
+  const parts = input.split(' ');
+  const cmd = parts[0].toLowerCase();
+  const args = parts.slice(1);
+
+  const files = {
+    'about.txt': 'Ashley Jung -- Founding Software Engineer based in San Francisco.\nBuilds thoughtful tools where product, AI systems, and infrastructure meet.',
+    'resume.txt': 'Founding Software Engineer @ Domu (YC S24) | Nov 2025 - Present\nResearch Assistant @ UC Berkeley | Feb 2025 - Oct 2025\nB.Sc. Computer Science, UC Berkeley, Dec 2024',
+    'projects.txt': 'agent-handoff -- portable, verifiable debugging context for coding agents\ngithub.com/ashjjung/agent-handoff\n\nrelayd -- durable webhook delivery with retries, dead letters, and replay\ngithub.com/ashjjung/relayd',
+    'links.txt': 'github.com/ashjjung\nlinkedin.com/in/ashley-jung\nashleyjung@berkeley.edu',
+    'README.md': 'This entire site is a single HTML file.\nNo frameworks were harmed in the making of this website.',
+    '.secret': 'You found the secret file!\nInteresting fact: I hate birds.'
+  };
+
+  const commands = {
+    help: () => 'Available commands: help, ls, cat <file>, date, clear, open <app>, echo, exit\n\nTry: cat .secret',
+    date: () => new Date().toLocaleString(),
+    echo: () => args.join(' '),
+    exit: () => { setTimeout(() => closeWindow('terminal'), 100); return 'Goodbye.'; },
+    clear: () => {
+      document.getElementById('term-history').innerHTML = '';
+      return '';
+    },
+    ls: () => Object.keys(files).join('  '),
+    cat: () => {
+      if (!args[0]) return 'usage: cat <filename>';
+      return files[args[0]] || `cat: ${args[0]}: No such file or directory`;
+    },
+    open: () => {
+      const appMap = { about:'about', projects:'projects', resume:'resume', links:'links', control:'control-panel' };
+      if (!args[0]) return 'usage: open <app>\nApps: about, projects, resume, links, control';
+      if (appMap[args[0]]) { setTimeout(() => openWindow(appMap[args[0]]), 100); return `Opening ${args[0]}...`; }
+      return `open: ${args[0]}: application not found`;
+    },
+    pwd: () => '/Users/ashley',
+    hostname: () => 'macintosh',
+    uname: () => 'Macintosh System 7.5.1 68040 1-HTML-FILE',
+    neofetch: () => [
+      '     +--------+    guest@ashleys-mac',
+      '     | :)     |    OS: Macintosh System 7.5.1',
+      '     |        |    Host: Single HTML File',
+      '     +--------+    Shell: Terminal v1.0',
+      '      |======|     Resolution: 512 x 342',
+      '      +------+     Memory: 128K',
+      ''
+    ].join('\n'),
+    sudo: () => 'Password: \nNice try.',
+    'rm': () => {
+      if (args.join(' ').includes('-rf')) {
+        const win = openWindows['terminal'];
+        if (win) { win.style.animation = 'shake 0.4s'; setTimeout(() => win.style.animation = '', 400); }
+        return 'System destroyed. Just kidding.';
+      }
+      return 'rm: permission denied';
+    },
+    cowsay: () => {
+      const msg = args.length ? args.join(' ') : 'moo';
+      const border = '-'.repeat(msg.length + 2);
+      return ` +${border}+\n | ${msg} |\n +${border}+\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||`;
+    },
+    hack: () => {
+      const history = document.getElementById('term-history');
+      let i = 0;
+      const iv = setInterval(() => {
+        const line = document.createElement('div');
+        line.style.color = '#22c55e';
+        line.textContent = Array.from({length:50}, () => String.fromCharCode(33 + Math.random()*93)).join('');
+        history.appendChild(line);
+        history.scrollTop = history.scrollHeight;
+        if (++i > 15) {
+          clearInterval(iv);
+          termAppendLine('ACCESS GRANTED. Welcome, root.');
+        }
+      }, 80);
+      return '';
+    },
+  };
+
+  if (commands[cmd]) return commands[cmd]();
+  return `zsh: command not found: ${cmd}`;
+}
+
 // ═══ CONTROL PANEL ACTIONS ═══
 function toggleDarkMode() {
   darkMode = !darkMode;
@@ -1292,7 +1498,7 @@ function setPattern(pat, el) {
 }
 
 function copyEmail() {
-  navigator.clipboard.writeText('ashley@example.com').then(() => {
+  navigator.clipboard.writeText('ashleyjung@berkeley.edu').then(() => {
     playClick();
   });
   closeAllMenus();
@@ -1388,7 +1594,9 @@ function openWindow(id) {
     left:def.x+'px', top:def.y+'px', zIndex:++windowZIndex
   });
 
-  const content = id === 'control-panel' ? buildControlPanelContent() : def.content;
+  const content = id === 'control-panel' ? buildControlPanelContent()
+                : id === 'terminal' ? buildTerminalContent()
+                : def.content;
 
   win.innerHTML = `
     <div class="title-bar">
@@ -1414,6 +1622,7 @@ function openWindow(id) {
   }
 
   if (id==='links') setTimeout(drawLinkIcons, 10);
+  if (id==='terminal') setTimeout(initTerminal, 10);
   if (id==='control-panel') setTimeout(drawPatternPreviews, 10);
   if (id==='about-mac') {
     setTimeout(() => {
@@ -1562,10 +1771,9 @@ function makeResizable(win) {
 function drawLinkIcons() {
   const grid=document.getElementById('links-grid'); if(!grid)return;
   const links=[
-    {label:'GitHub',url:'#',icon:'star'},
-    {label:'LinkedIn',url:'#',icon:'hand'},
-    {label:'Twitter / X',url:'#',icon:'star'},
-    {label:'Email',url:'mailto:ashley@example.com',icon:'document'},
+    {label:'GitHub',url:'https://github.com/ashjjung',icon:'star'},
+    {label:'LinkedIn',url:'https://www.linkedin.com/in/ashley-jung/',icon:'hand'},
+    {label:'Email',url:'mailto:ashleyjung@berkeley.edu',icon:'document'},
   ];
   grid.innerHTML='';
   links.forEach(link=>{
