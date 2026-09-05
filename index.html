@@ -18,9 +18,6 @@
   --white-pure: #faf8f4;
   --shadow: rgba(37, 34, 24, 0.28);
   --title-bar-inactive: #b5b2aa;
-  --terminal-bg: #fff;
-  --terminal-text: #000;
-  --terminal-scrollbar: #999;
   --font-size: 12.5px;
 }
 
@@ -37,9 +34,6 @@ body.dark-mode {
   --white-pure: #262520;
   --shadow: rgba(0, 0, 0, 0.7);
   --title-bar-inactive: #3a3832;
-  --terminal-bg: #000;
-  --terminal-text: #fff;
-  --terminal-scrollbar: #666;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -188,21 +182,21 @@ body {
 .window[data-id="terminal"] { border-width: 1px; }
 .window[data-id="terminal"] .window-content { padding: 0; }
 #term-wrap {
-  background: var(--terminal-bg); color: var(--terminal-text); font-family: 'IBM Plex Mono', monospace;
+  background: var(--white); color: var(--text); font-family: 'IBM Plex Mono', monospace;
   font-size: 12px; line-height: 1.55; padding: 12px 14px; height: 100%; display: flex;
   flex-direction: column; position: relative; overflow: hidden;
 }
 #term-history { flex: 1; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
 #term-history::-webkit-scrollbar { width: 8px; }
-#term-history::-webkit-scrollbar-track { background: var(--terminal-bg); }
-#term-history::-webkit-scrollbar-thumb { background: var(--terminal-scrollbar); }
+#term-history::-webkit-scrollbar-track { background: var(--white); }
+#term-history::-webkit-scrollbar-thumb { background: var(--border); }
 #term-input-line { display: flex; align-items: center; white-space: nowrap; }
-#term-input-line .prompt, .prompt-line { color: var(--terminal-text); font-weight: 600; }
+#term-input-line .prompt, .prompt-line { color: var(--text); font-weight: 600; }
 #term-input-line .prompt { margin-right: 7px; }
 #term-input {
-  background: transparent; border: none; outline: none; color: var(--terminal-text);
+  background: transparent; border: none; outline: none; color: var(--text);
   font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.55; flex: 1;
-  caret-color: var(--terminal-text);
+  caret-color: var(--text);
 }
 
 /* ═══ DESKTOP ═══ */
